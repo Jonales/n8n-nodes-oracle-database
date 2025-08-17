@@ -10,7 +10,8 @@
 
 Node avançado **Oracle Database** para [n8n](https://n8n.io/) com **recursos empresariais para cargas pesadas** e suporte completo ao **Oracle 19c+**.
 
-> **🚀 Versão 1.0.0 - Arquitetura Revolucionária**  
+> **🚀 Versão 1.0.0 - Arquitetura Revolucionária**
+>
 > - **Thin Mode** (padrão) - Zero configuração, funciona em qualquer ambiente
 > - **Thick Mode** - Performance máxima com Oracle Client para cargas críticas
 > - **Detecção automática** do modo ideal baseado no ambiente
@@ -73,12 +74,14 @@ n8n-nodes-oracle-database/
 ## ⭐ Recursos Revolucionários
 
 ### 🔧 **Dual Mode Architecture**
+
 - ✅ **Thin Mode** (padrão) - Zero configuração, cliente JavaScript puro
 - ✅ **Thick Mode** - Performance máxima com Oracle Client libraries
 - ✅ **Detecção automática** - Escolhe o melhor modo baseado no ambiente
 - ✅ **Configuração flexível** - Controle total sobre o modo de conexão
 
 ### 🏗️ **Operações Empresariais**
+
 - ✅ **Connection Pooling** inteligente (Standard, High Volume, OLTP, Analytics)
 - ✅ **Bulk Operations** - Insert/Update/Delete/Upsert em massa otimizadas
 - ✅ **PL/SQL Executor** - Blocos anônimos, procedures, functions com metadados
@@ -87,6 +90,7 @@ n8n-nodes-oracle-database/
 - ✅ **Health Checks** - Monitoramento e diagnóstico avançado
 
 ### 📊 **Tipos de Operação**
+
 1. **SQL Query** - Consultas com bind variables e proteção SQL injection
 2. **PL/SQL Block** - Execução com detecção automática de parâmetros OUT
 3. **Stored Procedure** - Chamadas com metadados automáticos
@@ -100,6 +104,7 @@ n8n-nodes-oracle-database/
 ## 🚀 Instalação
 
 ### Instalação Básica (Thin Mode)
+
 ```bash
 
 npm install @jonales/n8n-nodes-oracle-database
@@ -113,6 +118,7 @@ npm install @jonales/n8n-nodes-oracle-database
 Para **performance máxima** em cargas críticas, instale o Oracle Client:
 
 #### **Linux/macOS:**
+
 ```bash
 
 
@@ -132,6 +138,7 @@ npm install @jonales/n8n-nodes-oracle-database
 ```
 
 #### **Windows:**
+
 ```bash
 
 
@@ -148,6 +155,7 @@ npm install @jonales/n8n-nodes-oracle-database
 ```
 
 #### **Docker:**
+
 ```bash
 
 FROM n8nio/n8n:latest
@@ -171,15 +179,16 @@ RUN npm install @jonales/n8n-nodes-oracle-database
 
 ### 1. **Credenciais Oracle**
 
-| Campo | Descrição | Exemplo |
-|-------|-----------|---------|
-| **User** | Usuário Oracle | `hr` ou `system` |
-| **Password** | Senha do usuário | `sua_senha_segura` |
-| **Connection String** | String de conexão | `localhost:1521/XEPDB1` |
-| **Use Thin Mode** | Modo de conexão | `true` (padrão) ou `false` |
+| Campo                  | Descrição                 | Exemplo                          |
+| ---------------------- | ------------------------- | -------------------------------- |
+| **User**               | Usuário Oracle            | `hr` ou `system`                 |
+| **Password**           | Senha do usuário          | `sua_senha_segura`               |
+| **Connection String**  | String de conexão         | `localhost:1521/XEPDB1`          |
+| **Use Thin Mode**      | Modo de conexão           | `true` (padrão) ou `false`       |
 | **Oracle Client Path** | Caminho do client (thick) | `/opt/oracle/instantclient_23_4` |
 
 #### **Exemplos de Connection String:**
+
 ```bash
 
 
@@ -204,11 +213,13 @@ oracle-rds.cluster-xyz.region.rds.amazonaws.com:1521/ORCL
 ### 2. **Configuração Automática vs Manual**
 
 #### **Modo Automático (Recomendado):**
-- Deixe **"Use Thin Mode"** como `true` 
+
+- Deixe **"Use Thin Mode"** como `true`
 - O sistema detecta automaticamente se Oracle Client está disponível
 - Usa thick mode se detectado, senão usa thin mode
 
 #### **Modo Manual:**
+
 - **Thin Mode:** `Use Thin Mode = true` - Zero configuração
 - **Thick Mode:** `Use Thin Mode = false` + configurar caminho do Oracle Client
 
@@ -217,6 +228,7 @@ oracle-rds.cluster-xyz.region.rds.amazonaws.com:1521/ORCL
 ## 💡 Exemplos Práticos Avançados
 
 ### **SQL Query com Bind Variables**
+
 ```sql
 
 SELECT
@@ -239,6 +251,7 @@ LIMIT :max_results
 ```
 
 **Parâmetros:**
+
 - `status` (String): "ACTIVE"
 - `start_date` (Date): "2024-01-01"
 - `end_date` (Date): "2024-12-31"
@@ -247,6 +260,7 @@ LIMIT :max_results
 - `max_results` (Number): 100
 
 ### **PL/SQL Block Avançado**
+
 ```sql
 
 DECLARE
@@ -262,7 +276,7 @@ v_batch_size CONSTANT NUMBER := 1000;
         WHERE status = 'PENDING'
         AND created_date >= TRUNC(SYSDATE) - :days_back
         ORDER BY priority DESC, created_date ASC;
-    
+
     -- Coleção para processamento em lote
     TYPE t_order_ids IS TABLE OF orders.order_id%TYPE INDEX BY PLS_INTEGER;
     l_order_ids t_order_ids;
@@ -275,58 +289,58 @@ VALUES ('ORDER_BATCH_PROCESSING', SYSTIMESTAMP, 'STARTED');
     OPEN c_orders;
     LOOP
         FETCH c_orders BULK COLLECT INTO l_order_ids LIMIT v_batch_size;
-        
+
         FOR i IN 1..l_order_ids.COUNT LOOP
             BEGIN
                 -- Validar pedido
                 validate_order(l_order_ids(i));
-                
+
                 -- Processar pagamento
                 IF process_payment(l_order_ids(i)) THEN
                     -- Atualizar status para processado
-                    UPDATE orders 
-                    SET status = 'PROCESSED', 
+                    UPDATE orders
+                    SET status = 'PROCESSED',
                         processed_date = SYSTIMESTAMP,
                         processed_by = USER
                     WHERE order_id = l_order_ids(i);
-                    
+
                     v_processed_count := v_processed_count + 1;
                 ELSE
                     -- Marcar como erro
-                    UPDATE orders 
-                    SET status = 'ERROR', 
+                    UPDATE orders
+                    SET status = 'ERROR',
                         error_message = 'Payment processing failed'
                     WHERE order_id = l_order_ids(i);
-                    
+
                     v_error_count := v_error_count + 1;
                 END IF;
-                
+
             EXCEPTION
                 WHEN OTHERS THEN
                     -- Log erro específico
                     INSERT INTO error_log (order_id, error_message, error_time)
                     VALUES (l_order_ids(i), SQLERRM, SYSTIMESTAMP);
-                    
+
                     v_error_count := v_error_count + 1;
             END;
         END LOOP;
-        
+
         -- Commit a cada lote
         COMMIT;
-        
+
         EXIT WHEN c_orders%NOTFOUND;
     END LOOP;
     CLOSE c_orders;
-    
+
     -- Log final
     INSERT INTO process_log (process_name, end_time, status, processed_count, error_count)
     VALUES ('ORDER_BATCH_PROCESSING', SYSTIMESTAMP, 'COMPLETED', v_processed_count, v_error_count);
-    
+
     -- Retornar resultados
     :processed_count := v_processed_count;
     :error_count := v_error_count;
     :total_time := EXTRACT(SECOND FROM (SYSTIMESTAMP - (SELECT start_time FROM process_log WHERE process_name = 'ORDER_BATCH_PROCESSING' AND ROWNUM = 1)));
-    
+
     COMMIT;
     EXCEPTION
 WHEN OTHERS THEN
@@ -338,89 +352,86 @@ END;
 ```
 
 ### **Bulk Operations Enterprise**
-```json
 
+```json
 // Configuração para inserção de 1 milhão de registros
 {
-  "operationType": "bulk",
-  "connectionPool": "highvolume",  // Pool otimizado
-  "tableName": "customer_transactions",
-  "bulkOperation": "bulkInsert",
-  "options": {
-    "batchSize": 10000,           // 10k por batch
-    "continueOnError": true,      // Não parar em erros
-    "autoCommit": false,          // Commit manual
-    "dmlRowCounts": true          // Estatísticas detalhadas
-  }
+	"operationType": "bulk",
+	"connectionPool": "highvolume", // Pool otimizado
+	"tableName": "customer_transactions",
+	"bulkOperation": "bulkInsert",
+	"options": {
+		"batchSize": 10000, // 10k por batch
+		"continueOnError": true, // Não parar em erros
+		"autoCommit": false, // Commit manual
+		"dmlRowCounts": true // Estatísticas detalhadas
+	}
 }
-
 ```
 
 ### **Transaction Manager Avançado**
-```json
 
+```json
 // Transação complexa com múltiplos savepoints
 {
-  "operationType": "transaction",
-  "connectionPool": "oltp",
-  "transactionOptions": {
-  "isolation": "READ_COMMITTED",
-  "timeout": 300,               // 5 minutos
-  "maxRetries": 3,
-  "retryDelay": 1000
-},
-"operations": [
-  {
-    "sql": "INSERT INTO orders (...) VALUES (...)",
-    "savepoint": "order_created"
-  },
-  {
-    "sql": "UPDATE inventory SET stock = stock - :quantity WHERE product_id = :product_id",
-    "savepoint": "inventory_updated"
-  },
-  {
-    "sql": "INSERT INTO order_items (...) VALUES (...)",
-    "savepoint": "items_added"
-  },
-  {
-    "sql": "DELETE FROM shopping_cart WHERE customer_id = :customer_id",
-    "savepoint": "cart_cleared"
-  }
-  ]
+	"operationType": "transaction",
+	"connectionPool": "oltp",
+	"transactionOptions": {
+		"isolation": "READ_COMMITTED",
+		"timeout": 300, // 5 minutos
+		"maxRetries": 3,
+		"retryDelay": 1000
+	},
+	"operations": [
+		{
+			"sql": "INSERT INTO orders (...) VALUES (...)",
+			"savepoint": "order_created"
+		},
+		{
+			"sql": "UPDATE inventory SET stock = stock - :quantity WHERE product_id = :product_id",
+			"savepoint": "inventory_updated"
+		},
+		{
+			"sql": "INSERT INTO order_items (...) VALUES (...)",
+			"savepoint": "items_added"
+		},
+		{
+			"sql": "DELETE FROM shopping_cart WHERE customer_id = :customer_id",
+			"savepoint": "cart_cleared"
+		}
+	]
 }
-
 ```
 
 ### **Oracle Advanced Queuing**
-```json
 
+```json
 // Enviar mensagem crítica para fila
 {
-  "operationType": "queue",
-  "queueName": "CRITICAL_ORDERS_QUEUE",
-  "operation": "enqueue",
-  "message": {
-  "payload": {
-  "orderId": 12345,
-  "customerId": 67890,
-  "priority": "URGENT",
-  "amount": 1599.99,
-  "metadata": {
-  "source": "n8n_workflow",
-  "timestamp": "2024-01-15T10:30:00Z"
+	"operationType": "queue",
+	"queueName": "CRITICAL_ORDERS_QUEUE",
+	"operation": "enqueue",
+	"message": {
+		"payload": {
+			"orderId": 12345,
+			"customerId": 67890,
+			"priority": "URGENT",
+			"amount": 1599.99,
+			"metadata": {
+				"source": "n8n_workflow",
+				"timestamp": "2024-01-15T10:30:00Z"
+			}
+		},
+		"priority": 1, // Alta prioridade
+		"correlationId": "ORD-12345",
+		"delay": 0, // Processar imediatamente
+		"expiration": 3600 // Expira em 1 hora
+	},
+	"options": {
+		"visibility": "ON_COMMIT",
+		"deliveryMode": "PERSISTENT"
+	}
 }
-},
-  "priority": 1,              // Alta prioridade
-  "correlationId": "ORD-12345",
-  "delay": 0,                 // Processar imediatamente
-  "expiration": 3600          // Expira em 1 hora
-},
-  "options": {
-    "visibility": "ON_COMMIT",
-    "deliveryMode": "PERSISTENT"
-  }
-}
-
 ```
 
 ---
@@ -428,6 +439,7 @@ END;
 ## 🏊 Connection Pools Especializados
 
 ### **Standard Pool** (Padrão)
+
 ```bash
 
 {
@@ -442,6 +454,7 @@ END;
 ```
 
 ### **High Volume Pool**
+
 ```bash
 
 {
@@ -457,6 +470,7 @@ END;
 ```
 
 ### **OLTP Pool**
+
 ```bash
 
 {
@@ -472,6 +486,7 @@ END;
 ```
 
 ### **Analytics Pool**
+
 ```bash
 
 {
@@ -490,6 +505,7 @@ END;
 ## 📊 Performance Benchmarks
 
 ### **Testado com Sucesso:**
+
 - ✅ **10 milhões de registros** inseridos em < 8 minutos (thick mode)
 - ✅ **Consultas complexas** com 100+ JOINs executadas eficientemente
 - ✅ **Transações distribuídas** com 500+ operações e savepoints
@@ -498,6 +514,7 @@ END;
 - ✅ **Connection pools** suportando 1000+ conexões simultâneas
 
 ### **Otimizações Implementadas:**
+
 - **Array DML** para bulk operations
 - **Statement caching** inteligente
 - **Connection pooling** adaptativo
@@ -511,6 +528,7 @@ END;
 ## 🔐 Segurança Empresarial
 
 ### **Proteção SQL Injection**
+
 ```sql
 
 -- ❌ VULNERÁVEL (evitado automaticamente)
@@ -522,6 +540,7 @@ SELECT * FROM users WHERE id = :user_id
 ```
 
 ### **Recursos de Segurança:**
+
 - ✅ **Bind variables obrigatórias** - Proteção total contra SQL injection
 - ✅ **SSL/TLS nativo** - Criptografia de transporte
 - ✅ **Oracle Wallet** - Autenticação segura
@@ -534,6 +553,7 @@ SELECT * FROM users WHERE id = :user_id
 ## 🗃️ Compatibilidade Total
 
 ### **Oracle Database Versions:**
+
 - ✅ Oracle Database **12.1+** (todas as edições)
 - ✅ Oracle Database **18c, 19c, 21c, 23c**
 - ✅ Oracle **Autonomous Database** (OCI)
@@ -543,6 +563,7 @@ SELECT * FROM users WHERE id = :user_id
 - ✅ Oracle **Cloud Infrastructure**
 
 ### **Deployment Environments:**
+
 - ✅ **Windows** (10, 11, Server 2016+, Server 2019+)
 - ✅ **Linux** (Ubuntu, CentOS, RHEL, Alpine, Amazon Linux, Debian)
 - ✅ **macOS** (Intel x64 e Apple Silicon M1/M2/M3)
@@ -552,6 +573,7 @@ SELECT * FROM users WHERE id = :user_id
 - ✅ **CI/CD** (GitHub Actions, GitLab CI, Jenkins, Azure DevOps)
 
 ### **Node.js Versions:**
+
 - ✅ **Node.js 18.18.0+** (mínimo LTS)
 - ✅ **Node.js 20.x** (recomendado)
 - ✅ **Node.js 22.x** (latest LTS)
@@ -563,6 +585,7 @@ SELECT * FROM users WHERE id = :user_id
 ### **Problemas de Conexão:**
 
 #### **ORA-12541: TNS:no listener**
+
 ```
 
 
@@ -579,6 +602,7 @@ telnet oracle-host 1521
 ```
 
 #### **ORA-01017: invalid username/password**
+
 ```sql
 
 -- Verificar conta não expirada
@@ -595,6 +619,7 @@ GRANT CONNECT, RESOURCE TO seu_usuario;
 ```
 
 #### **Thick Mode: Cannot load Oracle Client**
+
 ```bash
 
 
@@ -619,6 +644,7 @@ ENV LD_LIBRARY_PATH=/usr/lib/oracle/23.4/client64/lib
 ### **Performance Issues:**
 
 #### **Slow Bulk Operations**
+
 ```bash
 
 // Configuração otimizada
@@ -635,6 +661,7 @@ ENV LD_LIBRARY_PATH=/usr/lib/oracle/23.4/client64/lib
 ```
 
 #### **Connection Pool Exhaustion**
+
 ```bash
 
 // Monitoramento
@@ -655,6 +682,7 @@ console.log(`Conexões: ${poolStats.connectionsInUse}/${poolStats.poolMax}`);
 ## 🧪 Desenvolvimento Local
 
 ### **Setup do Ambiente:**
+
 ```bash
 
 
@@ -688,6 +716,7 @@ npm link @jonales/n8n-nodes-oracle-database
 ```
 
 ### **Scripts Disponíveis:**
+
 ```bash
 
 npm run clean              \# Limpar build cache
@@ -709,6 +738,7 @@ npm run release            \# Semantic release
 ```
 
 ### **Estrutura de Testes:**
+
 ```bash
 
 __tests__/
@@ -731,34 +761,32 @@ __tests__/
 ## 📦 Dependencies Atualizadas
 
 ### **Runtime:**
+
 ```json
-
 {
-  "oracledb": "^6.9.0",           // Oracle client libraries
-  "n8n-workflow": "^1.82.0"       // n8n workflow types
+	"oracledb": "^6.9.0", // Oracle client libraries
+	"n8n-workflow": "^1.82.0" // n8n workflow types
 }
-
 ```
 
 ### **Development:**
+
 ```json
-
 {
-  "typescript": "^5.7.2",                           // TypeScript latest
-  "@typescript-eslint/eslint-plugin": "^8.39.1",    // TS ESLint rules
-  "@typescript-eslint/parser": "^8.39.1",           // TS parser
-  "eslint": "^9.33.0",                              // Modern ESLint
-  "@eslint/js": "^9.33.0",                          // ESLint flat config
-  "prettier": "^3.3.3",                             // Code formatter
-  "jest": "^30.0.5",                                // Testing framework
-  "ts-jest": "^30.0.3",                             // Jest TS support
-  "gulp": "^5.0.0",                                 // Build automation
-  "semantic-release": "^24.2.0",                    // Automated releases
-  "husky": "^9.1.7",                                // Git hooks
-  "@types/node": "^22.10.1",                        // Node.js types
-  "rimraf": "^6.0.1"                                // Cross-platform rm -rf
+	"typescript": "^5.7.2", // TypeScript latest
+	"@typescript-eslint/eslint-plugin": "^8.39.1", // TS ESLint rules
+	"@typescript-eslint/parser": "^8.39.1", // TS parser
+	"eslint": "^9.33.0", // Modern ESLint
+	"@eslint/js": "^9.33.0", // ESLint flat config
+	"prettier": "^3.3.3", // Code formatter
+	"jest": "^30.0.5", // Testing framework
+	"ts-jest": "^30.0.3", // Jest TS support
+	"gulp": "^5.0.0", // Build automation
+	"semantic-release": "^24.2.0", // Automated releases
+	"husky": "^9.1.7", // Git hooks
+	"@types/node": "^22.10.1", // Node.js types
+	"rimraf": "^6.0.1" // Cross-platform rm -rf
 }
-
 ```
 
 ---
@@ -766,6 +794,7 @@ __tests__/
 ## 🤝 Contribuindo
 
 ### **Como Contribuir:**
+
 1. 🍴 **Fork** o repositório
 2. 🌿 **Crie branch:** `git checkout -b feature/amazing-feature`
 3. ✅ **Commit changes:** `git commit -m 'feat: add amazing feature'`
@@ -773,6 +802,7 @@ __tests__/
 5. 🔄 **Open Pull Request** com descrição detalhada
 
 ### **Tipos de Contribuição:**
+
 - 🐛 **Bug Fixes** - Correções de problemas
 - ⚡ **Performance** - Otimizações de velocidade
 - 📚 **Documentation** - Melhorias na documentação
@@ -785,6 +815,7 @@ __tests__/
 <div align="center">
 
 ### PIX:
+
 <img src="image/README/qrcode-pix-jonatas.mei@outlook.com.png" alt="QR Code PIX" width="150" />
 
 **Chave PIX:** jonatas.mei@outlook.com
