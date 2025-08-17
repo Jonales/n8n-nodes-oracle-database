@@ -1,8 +1,8 @@
 # n8n-nodes-oracle-database
 ![LOGOTIPO](image/README/oracle-n8n.png)
 
-[![npm version](https://img.shields.io/npm/v/n8n-nodes-oracle-database.svg)](https://www.npmjs.com/package/n8n-nodes-oracle-database)
-[![npm downloads](https://img.shields.io/npm/dt/n8n-nodes-oracle-database.svg)](https://www.npmjs.com/package/n8n-nodes-oracle-database)
+[![npm version](https://img.shields.io/npm/v/n8n-nodes-oracle-database.svg)](https://www.npmjs.com/package/@jonales/n8n-nodes-oracle-database)
+[![npm downloads](https://img.shields.io/npm/dt/n8n-nodes-oracle-database.svg)](https://www.npmjs.com/package/@jonales/n8n-nodes-oracle-database)
 
 
 [Oracle Database](https://docs.oracle.com/en/database/oracle/oracle-database/) node avançado para **n8n**, com **recursos empresariais para cargas pesadas e Oracle 19c+**.
