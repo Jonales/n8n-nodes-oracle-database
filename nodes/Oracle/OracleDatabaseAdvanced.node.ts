@@ -23,9 +23,8 @@ import { OracleConnectionPool } from './core/connectionPool';
 import { PLSQLExecutorFactory } from './core/plsqlExecutor';
 import { TransactionManagerFactory } from './core/transactionManager';
 
-// ✅ CORREÇÃO: Import corrigido do arquivo connection
+// ✅ CORREÇÃO: Imports corrigidos
 import { OracleConnection, ConnectionConfig } from './connection';
-// ✅ CORREÇÃO: Import corrigido do arquivo types  
 import { OracleCredentials } from './types/oracle.credentials.type';
 
 /**
@@ -151,7 +150,7 @@ export class OracleDatabaseAdvanced implements INodeType {
      * ✅ CORREÇÃO: Método execute principal corrigido
      */
     async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-        // ✅ CORREÇÃO 1: Preparar credenciais diretamente no contexto execute
+        // ✅ CORREÇÃO: Preparar credenciais diretamente no contexto execute
         const rawCredentials = await this.getCredentials('oracleCredentials');
         const credentials: OracleCredentials = {
             user: String(rawCredentials.user),
@@ -166,7 +165,7 @@ export class OracleDatabaseAdvanced implements INodeType {
         const operationType = this.getNodeParameter('operationType', 0) as string;
         const connectionPoolType = this.getNodeParameter('connectionPool', 0) as string;
 
-        // ✅ CORREÇÃO 2: Declarar connection como não-undefined e inicializar adequadamente
+        // ✅ CORREÇÃO: Declarar connection corretamente
         let connection: Connection | null = null;
         let returnItems: INodeExecutionData[] = [];
 
@@ -312,13 +311,12 @@ export class OracleDatabaseAdvanced implements INodeType {
                 const oracleConnection = new OracleConnection(credentials, connectionConfig);
                 connection = await oracleConnection.getConnection();
             } else {
-                // ✅ CORREÇÃO: Usar apenas 2 parâmetros conforme assinatura do método
                 const poolConfig = getPoolConfig(connectionPoolType);
                 const pool = await OracleConnectionPool.getPool(credentials, poolConfig);
                 connection = await pool.getConnection();
             }
 
-            // ✅ AGORA connection é garantidamente definido
+            // ✅ Garantir que connection foi definido
             if (!connection) {
                 throw new Error('Falha ao obter conexão com o banco de dados');
             }
@@ -359,7 +357,7 @@ export class OracleDatabaseAdvanced implements INodeType {
                 },
             );
         } finally {
-            // ✅ CORREÇÃO 2: Verificar se connection foi definido antes de fechar
+            // ✅ CORREÇÃO: Verificar se connection foi definido antes de fechar
             if (connection) {
                 try {
                     await connection.close();
