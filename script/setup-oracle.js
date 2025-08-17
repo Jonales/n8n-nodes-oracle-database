@@ -424,30 +424,30 @@ if (require.main === module) {
     };
 
     if (args.includes('--help')) {
-        console.log(\`
-Oracle Client Setup
+            console.log(`
+        Oracle Client Setup
 
-Uso:
-  node setup-oracle.js [opções]
+        Uso:
+        node setup-oracle.js [opções]
 
-Opções:
-  --skip-deps     Pula verificação de dependências
-  --skip-oracle   Pula configuração do Oracle Client
-  --skip-tests    Pula testes de validação
-  --force         Força reinstalação do Oracle Client
-  --strict        Falha se Oracle Client não puder ser configurado
-  --help          Exibe esta ajuda
+        Opções:
+        --skip-deps     Pula verificação de dependências
+        --skip-oracle   Pula configuração do Oracle Client
+        --skip-tests    Pula testes de validação
+        --force         Força reinstalação do Oracle Client
+        --strict        Falha se Oracle Client não puder ser configurado
+        --help          Exibe esta ajuda
 
-Exemplos:
-  node setup-oracle.js                 # Setup completo
-  node setup-oracle.js --force         # Força reinstalação
-  node setup-oracle.js --skip-deps     # Pula verificação de deps
-        \`);
-        process.exit(0);
-    }
-
-    const setup = new OracleSetup();
-    setup.run(options);
-}
+        Exemplos:
+        node setup-oracle.js                 # Setup completo
+        node setup-oracle.js --force         # Força reinstalação
+        node setup-oracle.js --skip-deps     # Pula verificação de deps
+            `);
+            process.exit(0);
+        } 
+}// Missing closing brace was here
 
 module.exports = OracleSetup;
+
+const setup = new OracleSetup(); // Cria instância
+setup.run(options); // Executa o setup 
