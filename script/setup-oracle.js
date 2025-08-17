@@ -447,7 +447,7 @@ if (require.main === module) {
         } 
 }// Missing closing brace was here
 
-module.exports = OracleSetup;
-
 const setup = new OracleSetup(); // Cria instância
 setup.run(options); // Executa o setup 
+
+module.exports = OracleSetup;
