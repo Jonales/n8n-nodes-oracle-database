@@ -1,7 +1,7 @@
 {
 	"name": "@jonales/n8n-nodes-oracle-database",
 	"version": "1.0.0",
-	"description": "Oracle Database node com recursos avançados para cargas pesadas e Oracle 19c+. Suporte completo para PL/SQL, bulk operations, connection pooling e Oracle Cloud Infrastructure.",
+	"description": "Oracle Database node com recursos avançados para cargas pesadas e Oracle 19c+. Suporte completo para PL/SQL, bulk operations, connection pooling e Oracle Cloud Infrastructure com instalação automática do cliente Oracle.",
 	"keywords": [
 		"n8n-community-node-package",
 		"oracle",
@@ -15,7 +15,11 @@
 		"transactions",
 		"oracle-cloud",
 		"autonomous-database",
-		"oci"
+		"oci",
+		"thin-client",
+		"thick-client",
+		"instant-client",
+		"auto-install"
 	],
 	"license": "MIT",
 	"homepage": "https://github.com/jonales/n8n-nodes-oracle-database",
@@ -41,7 +45,9 @@
 		"./package.json": "./package.json"
 	},
 	"files": [
-		"dist",
+		"dist/**/*",
+		"script/**/*",
+		"lib/**/*",
 		"index.js",
 		"index.d.ts",
 		"README.md",
@@ -83,7 +89,20 @@
 		"release": "semantic-release",
 		"validate": "npm run type-check && npm run lint && npm run test",
 		"dev:assets": "gulp watch",
-		"clean:dist": "gulp cleanup:dist"
+		"clean:dist": "gulp cleanup:dist",
+		"setup": "node script/setup-oracle.js",
+		"setup:force": "node script/setup-oracle.js --force",
+		"setup:skip-deps": "node script/setup-oracle.js --skip-deps",
+		"install-oracle": "node script/oracle-installer.js",
+		"install-oracle:force": "node script/oracle-installer.js --force",
+		"test-connection": "node script/test-connection.js",
+		"detect-oracle": "node -e \"const {getOracleClientConfig} = require('./script/oracle-detector'); getOracleClientConfig().then(console.log).catch(console.error);\"",
+		"clean:oracle": "node -e \"const {OracleClientDetector} = require('./script/oracle-detector'); new OracleClientDetector().cleanup();\"",
+		"postinstall": "npm run setup",
+		"validate:oracle": "node script/setup-oracle.js --skip-deps --skip-oracle",
+		"help": "node script/setup-oracle.js --help",
+		"oracle:status": "node script/oracle-status.js",
+		"oracle:repair": "node script/oracle-repair.js"
 	},
 	"publishConfig": {
 		"access": "public",
@@ -137,6 +156,28 @@
 	"optionalDependencies": {
 		"@types/oracledb": "^6.9.1"
 	},
+	"config": {
+		"oracle": {
+			"autoInstall": true,
+			"version": "21.8.0",
+			"fallbackVersions": ["19.22.0", "23.4.0"],
+			"platforms": [
+				"linux-x64",
+				"linux-arm64",
+				"darwin-x64",
+				"darwin-arm64",
+				"win32-x64"
+			],
+			"clientModes": {
+				"preferred": "thin",
+				"fallback": "thick",
+				"autoDetect": true
+			},
+			"downloadTimeout": 300000,
+			"retries": 3,
+			"skipOnCI": false
+		}
+	},
 	"lint-staged": {
 		"*.{ts,js,json,md}": [
 			"prettier --write"
@@ -151,6 +192,7 @@
 		"collectCoverageFrom": [
 			"nodes/**/*.ts",
 			"credentials/**/*.ts",
+			"script/**/*.ts",
 			"!**/*.d.ts",
 			"!**/node_modules/**"
 		],
