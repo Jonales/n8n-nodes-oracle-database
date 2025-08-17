@@ -1,5 +1,4 @@
 import { randomUUID } from 'crypto';
-
 import { IExecuteFunctions } from 'n8n-workflow';
 import {
   IDataObject,
@@ -10,7 +9,6 @@ import {
   NodeConnectionType,
 } from 'n8n-workflow';
 import oracledb from 'oracledb';
-
 import { OracleConnection } from './connection';
 
 // Polyfill para versões mais antigas do Node.js
@@ -19,9 +17,6 @@ if (typeof String.prototype.replaceAll === 'undefined') {
     searchValue: string | RegExp,
     replaceValue: string | ((substring: string, ...args: any[]) => string)
   ): string {
-    if (typeof replaceValue === 'function') {
-      return this.replace(new RegExp(searchValue as string, 'g'), replaceValue);
-    }
     return this.replace(new RegExp(searchValue as string, 'g'), replaceValue);
   };
 }
@@ -29,7 +24,10 @@ if (typeof String.prototype.replaceAll === 'undefined') {
 // Declaração global para o polyfill
 declare global {
   interface String {
-    replaceAll(searchValue: string | RegExp, replaceValue: string | ((substring: string, ...args: any[]) => string)): string;
+    replaceAll(
+      searchValue: string | RegExp,
+      replaceValue: string | ((substring: string, ...args: any[]) => string)
+    ): string;
   }
 }
 
@@ -48,7 +46,7 @@ export class OracleDatabase implements INodeType {
     group: ['input'],
     version: 1,
     description:
-      'Execute SQL queries on Oracle database with parameter support - embedded thin client',
+      'Execute SQL queries on Oracle database with parameter support - embedded thin/thick client',
     defaults: {
       name: 'Oracle Database',
     },
@@ -124,7 +122,8 @@ export class OracleDatabase implements INodeType {
                 type: 'options',
                 required: true,
                 default: false,
-                hint: 'If "Yes", the "Value" field should be comma-separated values (e.g., 1,2,3 or str1,str2,str3)',
+                hint:
+                  'If "Yes", the "Value" field should be comma-separated values (e.g., 1,2,3 or str1,str2,str3)',
                 options: [
                   { name: 'No', value: false },
                   { name: 'Yes', value: true },
@@ -158,13 +157,12 @@ export class OracleDatabase implements INodeType {
   public validateParameters(parameters: ParameterItem[], node: any): void {
     for (const param of parameters) {
       if (!param.name || param.name.trim() === '') {
-        throw new NodeOperationError(
-          node,
-          'Parameter name cannot be empty'
-        );
+        throw new NodeOperationError(node, 'Parameter name cannot be empty');
       }
-
-      if (param.parseInStatement && (!param.value || param.value.toString().trim() === '')) {
+      if (
+        param.parseInStatement &&
+        (!param.value || param.value.toString().trim() === '')
+      ) {
         throw new NodeOperationError(
           node,
           `Parameter '${param.name}' marked for IN statement but has no values`
@@ -183,7 +181,10 @@ export class OracleDatabase implements INodeType {
   /**
    * Converte o valor para o tipo apropriado
    */
-  private convertValue(value: string | number, datatype: string): string | number {
+  private convertValue(
+    value: string | number,
+    datatype: string
+  ): string | number {
     return datatype === 'number' ? Number(value) : String(value);
   }
 
@@ -209,28 +210,26 @@ export class OracleDatabase implements INodeType {
     query: string,
     node: any
   ): string {
-    const valList = item.value.toString().split(',').map(v => v.trim());
-    
+    const valList = item.value
+      .toString()
+      .split(',')
+      .map((v) => v.trim());
     if (valList.length === 0) {
       throw new NodeOperationError(
         node,
         `Parameter '${item.name}' for IN statement cannot be empty`
       );
     }
-
     const placeholders: string[] = [];
     const datatype = this.getOracleDataType(item.datatype);
-
     valList.forEach((val, index) => {
       const paramName = `${item.name}_${index}_${this.generateUniqueId()}`;
       placeholders.push(`:${paramName}`);
-
       bindParameters[paramName] = {
         type: datatype,
         val: this.convertValue(val, item.datatype),
       };
     });
-
     const inClause = `(${placeholders.join(',')})`;
     return query.replaceAll(`:${item.name}`, inClause);
   }
@@ -242,20 +241,25 @@ export class OracleDatabase implements INodeType {
     parameters: ParameterItem[],
     query: string,
     node: any
-  ): { bindParameters: { [key: string]: oracledb.BindParameter }; processedQuery: string } {
+  ): {
+    bindParameters: { [key: string]: oracledb.BindParameter };
+    processedQuery: string;
+  } {
     this.validateParameters(parameters, node);
-
     const bindParameters: { [key: string]: oracledb.BindParameter } = {};
     let processedQuery = query;
-
     for (const item of parameters) {
       if (item.parseInStatement) {
-        processedQuery = this.processInStatementParameter(item, bindParameters, processedQuery, node);
+        processedQuery = this.processInStatementParameter(
+          item,
+          bindParameters,
+          processedQuery,
+          node
+        );
       } else {
         this.processNormalParameter(item, bindParameters);
       }
     }
-
     return { bindParameters, processedQuery };
   }
 
@@ -264,10 +268,7 @@ export class OracleDatabase implements INodeType {
    */
   public validateQuery(query: string, node: any): void {
     if (!query || query.trim() === '') {
-      throw new NodeOperationError(
-        node,
-        'SQL query cannot be empty'
-      );
+      throw new NodeOperationError(node, 'SQL query cannot be empty');
     }
   }
 
@@ -277,13 +278,31 @@ export class OracleDatabase implements INodeType {
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const credentials = await this.getCredentials('oracleCredentials');
 
+    // Suporte ao modo thin/thick via credenciais
+    const thinMode = credentials.thinMode !== false; // por padrão true
+    const libDir = credentials.libDir || undefined;
+    const configDir = credentials.configDir || undefined;
+    const errorUrl = credentials.errorUrl || undefined;
+
+    // Monta config do modo para OracleConnection
+    const connectionConfig = thinMode
+      ? { mode: 'thin' }
+      : {
+          mode: 'thick',
+          libDir,
+          configDir,
+          errorUrl,
+        };
+
     const oracleCredentials = {
       user: String(credentials.user),
       password: String(credentials.password),
       connectionString: String(credentials.connectionString),
     };
 
-    const db = new OracleConnection(oracleCredentials);
+    // Adaptar construtor para requerer o modo extra (ajuste também em connection.ts)
+    const db = new OracleConnection(oracleCredentials, connectionConfig);
+
     let connection;
     let returnItems: INodeExecutionData[] = [];
 
@@ -292,16 +311,23 @@ export class OracleDatabase implements INodeType {
 
       // Obter e validar a query
       const query = this.getNodeParameter('query', 0) as string;
-      
+
       // Criar uma instância da classe para acessar os métodos privados
       const oracleInstance = new OracleDatabase();
+
       oracleInstance.validateQuery(query, this.getNode());
 
       // Obter parâmetros do usuário
-      const parameterList = ((this.getNodeParameter('params', 0, {}) as IDataObject).values as ParameterItem[]) || [];
+      const parameterList =
+        ((this.getNodeParameter('params', 0, {}) as IDataObject)
+          .values as ParameterItem[]) || [];
 
       // Processar parâmetros
-      const { bindParameters, processedQuery } = oracleInstance.processParameters(parameterList, query, this.getNode());
+      const { bindParameters, processedQuery } = oracleInstance.processParameters(
+        parameterList,
+        query,
+        this.getNode()
+      );
 
       // Log para debug (opcional - remova em produção)
       console.log('Executing query:', processedQuery);
@@ -316,10 +342,9 @@ export class OracleDatabase implements INodeType {
       returnItems = this.helpers.returnJsonArray(
         result.rows as unknown as IDataObject[]
       );
-
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      
+
       // Log detalhado para debug
       console.error('Oracle Database execution failed:', {
         error: errorMessage,
@@ -329,18 +354,21 @@ export class OracleDatabase implements INodeType {
       throw new NodeOperationError(
         this.getNode(),
         `Oracle Database Error: ${errorMessage}`,
-        { 
-          description: 'Check your SQL query and parameters for syntax errors'
+        {
+          description: 'Check your SQL query and parameters for syntax errors',
         }
       );
-
     } finally {
       if (connection) {
         try {
           await connection.close();
         } catch (closeError: unknown) {
           console.error(
-            `OracleDB: Failed to close the database connection: ${closeError instanceof Error ? closeError.message : String(closeError)}`
+            `OracleDB: Failed to close the database connection: ${
+              closeError instanceof Error
+                ? closeError.message
+                : String(closeError)
+            }`
           );
         }
       }
