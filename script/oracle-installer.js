@@ -356,6 +356,23 @@ class OracleClientInstaller {
                 
                 console.log('\n🎉 Instalação concluída com sucesso!');
                 console.log(`📁 Oracle Client instalado em: ${config.libDir}`);
+
+                // Ajuste LD_LIBRARY_PATH ou PATH conforme sistema
+                const platform = process.platform;
+                if (platform === 'linux' || platform === 'darwin') {
+                    process.env.LD_LIBRARY_PATH =
+                        config.libDir +
+                        (process.env.LD_LIBRARY_PATH ? `:${process.env.LD_LIBRARY_PATH}` : '');
+                    console.log(`🔧 LD_LIBRARY_PATH ajustado para: ${process.env.LD_LIBRARY_PATH}`);
+                    console.log(
+                        '💡 Para tornar isso permanente, adicione ao seu ~/.bashrc, ~/.zshrc ou profile:\n' +
+                        `    export LD_LIBRARY_PATH="${config.libDir}:$LD_LIBRARY_PATH"`
+                    );
+                } else if (platform === 'win32') {
+                    console.log('ℹ️ No Windows, adicione o diretório do Oracle Client ao PATH:');
+                    console.log(`    set PATH=${config.libDir};%PATH%`);
+                }
+
                 
                 return config;
             }
