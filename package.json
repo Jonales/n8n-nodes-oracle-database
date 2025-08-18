@@ -3,6 +3,8 @@
 	"version": "1.0.0",
 	"description": "Oracle Database node com recursos avançados para cargas pesadas e Oracle 19c+. Suporte completo para PL/SQL, bulk operations, connection pooling e Oracle Cloud Infrastructure com instalação automática do cliente Oracle.",
 	"keywords": [
+		"n8n",
+		"n8n-nodes",
 		"n8n-community-node-package",
 		"oracle",
 		"database",
@@ -114,7 +116,9 @@
 			"dist/credentials/Oracle.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/Oracle/OracleDatabaseAdvanced.node.js"
+			"dist/nodes/Oracle/OracleDatabaseAdvanced.node.js",
+			"dist/nodes/Oracle/PGVectorStore.node.js",
+			"dist/nodes/Oracle/ChatMemory.node.js"
 		]
 	},
 	"dependencies": {
