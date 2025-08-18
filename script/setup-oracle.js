@@ -218,7 +218,7 @@ class OracleSetup {
      */
     async runValidationTests() {
         console.log('🧪 Executando testes de validação...');
-        
+
         try {
             // Teste 1: Importação do oracledb
             console.log('   Teste 1: Importando oracledb...');
@@ -229,21 +229,38 @@ class OracleSetup {
             console.log('   Teste 2: Detecção de Oracle Client...');
             const { getOracleClientConfig } = require('./oracle-detector');
             const config = await getOracleClientConfig({ autoInstall: false });
-            
+
             console.log(`   ✅ Modo: ${config.mode}`);
             if (config.libDir) {
                 console.log(`   ✅ LibDir: ${config.libDir}`);
             }
 
-            // Teste 3: Conexão básica (sem credenciais reais)
+            // Teste 3: Inicialização do cliente (sem credenciais reais)
             console.log('   Teste 3: Inicialização do cliente...');
-            
+
             if (config.mode === 'thick' && config.libDir) {
+                // Ajuste LD_LIBRARY_PATH ou PATH conforme plataforma
+                const platform = process.platform;
+                if (platform === 'linux' || platform === 'darwin') {
+                    // Define variável temporária para o processo atual
+                    process.env.LD_LIBRARY_PATH =
+                        config.libDir +
+                        (process.env.LD_LIBRARY_PATH ? `:${process.env.LD_LIBRARY_PATH}` : '');
+                    console.log(`   🔧 LD_LIBRARY_PATH ajustado para: ${process.env.LD_LIBRARY_PATH}`);
+                    console.log(
+                        '   💡 Para uso permanente, adicione ao ~/.bashrc, ~/.zshrc ou seu profile:\n' +
+                        `       export LD_LIBRARY_PATH="${config.libDir}:$LD_LIBRARY_PATH"`
+                    );
+                } else if (platform === 'win32') {
+                    console.log('   ℹ️ No Windows, certifique-se que a pasta do cliente Oracle esteja no PATH:');
+                    console.log(`       set PATH=${config.libDir};%PATH%`);
+                }
+
                 try {
                     oracledb.initOracleClient({ libDir: config.libDir });
                     console.log('   ✅ Cliente thick inicializado');
                 } catch (error) {
-                    if (error.message.includes('DPI-1072')) {
+                    if (error.message && error.message.includes('DPI-1072')) {
                         console.log('   ✅ Cliente thick já inicializado');
                     } else {
                         throw error;
@@ -255,12 +272,12 @@ class OracleSetup {
 
             console.log('✅ Todos os testes passaram!');
             return true;
-
         } catch (error) {
             console.error('❌ Teste falhou:', error.message);
             return false;
         }
     }
+
 
     /**
      * Gera script de exemplo
@@ -414,7 +431,6 @@ module.exports = testOracleConnection;
 // CLI
 if (require.main === module) {
     const args = process.argv.slice(2);
-    
     const options = {
         skipDependencies: args.includes('--skip-deps'),
         skipOracle: args.includes('--skip-oracle'),
@@ -424,7 +440,7 @@ if (require.main === module) {
     };
 
     if (args.includes('--help')) {
-            console.log(`
+        console.log(`
         Oracle Client Setup
 
         Uso:
@@ -442,12 +458,10 @@ if (require.main === module) {
         node setup-oracle.js                 # Setup completo
         node setup-oracle.js --force         # Força reinstalação
         node setup-oracle.js --skip-deps     # Pula verificação de deps
-            `);
-            process.exit(0);
-        } 
-}// Missing closing brace was here
+        `);
+        process.exit(0);
+    }
 
-const setup = new OracleSetup(); // Cria instância
-setup.run(options); // Executa o setup 
-
-module.exports = OracleSetup;
+    const setup = new OracleSetup();
+    setup.run(options);
+}
