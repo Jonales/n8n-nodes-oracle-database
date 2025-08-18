@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json.schemastore.org/tsconfig",
-	"display": "n8n-oracle-advanced-base",
+	"display": "n8n-nodes-oracle-database",
 
 	"compilerOptions": {
 		"target": "ES2022",
