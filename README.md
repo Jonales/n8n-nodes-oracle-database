@@ -8,6 +8,23 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7.2-blue.svg)](https://www.typescriptlang.org/)
 [![Oracle](https://img.shields.io/badge/Oracle-12.1%2B-red.svg)](https://docs.oracle.com/en/database/)
 
+
+<details>
+<summary>🇺🇸 English</summary>
+
+---
+
+# 📖 Documentation in English
+
+</details>
+
+<details close>
+<summary>🇧🇷 Português</summary>
+
+---
+
+# 📖 Documentação em Português
+
 Node avançado **Oracle Database** para [n8n](https://n8n.io/) com **recursos empresariais para cargas pesadas** e suporte completo ao **Oracle 19c+**.
 
 > **🚀 Versão 1.0.0 - Arquitetura Revolucionária**
@@ -909,3 +926,5 @@ Este projeto está sob **MIT License** - veja [LICENSE.md](LICENSE.md) para deta
 **Made with ❤️ for Oracle & n8n communities**
 
 </div>
+
+</details>
