@@ -293,6 +293,25 @@ async function getOracleClientConfig(options = {}) {
             throw new Error('Oracle Client requerido mas não encontrado');
         }
 
+        if (detection.available && detection.libDir && (detection.type === 'local' || detection.type === 'system')) {
+            const platform = process.platform;
+            if (platform === 'linux' || platform === 'darwin') {
+                // Para o processo atual
+                process.env.LD_LIBRARY_PATH =
+                    detection.libDir +
+                    (process.env.LD_LIBRARY_PATH ? `:${process.env.LD_LIBRARY_PATH}` : '');
+                // Orientação para persistência
+                console.log(`🔧 LD_LIBRARY_PATH ajustado para: ${process.env.LD_LIBRARY_PATH}`);
+                console.log(
+                    '💡 Para tornar isso permanente, adicione ao seu ~/.bashrc, ~/.zshrc ou profile:\n' +
+                    `    export LD_LIBRARY_PATH="${detection.libDir}:$LD_LIBRARY_PATH"`
+                );
+            } else if (platform === 'win32') {
+                console.log('ℹ️ No Windows, adicione o diretório do Oracle Client ao PATH:');
+                console.log(`    set PATH=${detection.libDir};%PATH%`);
+            }
+        }
+
         return {
             mode: detection.available && forceThickMode ? 'thick' : 'thin',
             libDir: detection.available ? detection.libDir : undefined,
