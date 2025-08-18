@@ -93,3 +93,7 @@ temp/
 .idea/
 
 .husky
+
+
+# Script que é emitido na hora
+script/test-connection.js
