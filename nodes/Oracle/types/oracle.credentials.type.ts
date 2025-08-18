@@ -106,122 +106,122 @@ export interface OracleEnvironmentConfig {
  * Type Guards para validação em runtime
  */
 export const isOracleCredentials = (obj: any): obj is OracleCredentials => {
-	return (
-		typeof obj === 'object' &&
+  return (
+    typeof obj === 'object' &&
 		obj !== null &&
 		typeof obj.user === 'string' &&
 		typeof obj.password === 'string' &&
 		typeof obj.connectionString === 'string'
-	);
+  );
 };
 
 export const isThickModeCredentials = (credentials: OracleCredentials): boolean => {
-	return credentials.thinMode === false && !!credentials.libDir;
+  return credentials.thinMode === false && !!credentials.libDir;
 };
 
 export const isThinModeCredentials = (credentials: OracleCredentials): boolean => {
-	return credentials.thinMode !== false; // default é thin
+  return credentials.thinMode !== false; // default é thin
 };
 
 /**
  * Utilitários para configuração
  */
 export class OracleCredentialsUtils {
-	/**
+  /**
 	 * Cria configuração de conexão baseada nas credenciais
 	 */
-	static createConnectionConfig(credentials: OracleCredentials): OracleConnectionConfig {
-		if (credentials.thinMode === false) {
-			// Modo thick
-			if (!credentials.libDir) {
-				throw new Error('libDir é obrigatório para modo thick');
-			}
+  static createConnectionConfig(credentials: OracleCredentials): OracleConnectionConfig {
+    if (credentials.thinMode === false) {
+      // Modo thick
+      if (!credentials.libDir) {
+        throw new Error('libDir é obrigatório para modo thick');
+      }
 
-			return {
-				mode: 'thick',
-				libDir: credentials.libDir,
-				configDir: credentials.configDir,
-				errorUrl: credentials.errorUrl,
-			};
-		}
+      return {
+        mode: 'thick',
+        libDir: credentials.libDir,
+        configDir: credentials.configDir,
+        errorUrl: credentials.errorUrl,
+      };
+    }
 
-		// Modo thin (padrão)
-		return {
-			mode: 'thin',
-		};
-	}
+    // Modo thin (padrão)
+    return {
+      mode: 'thin',
+    };
+  }
 
-	/**
+  /**
 	 * Valida as credenciais antes do uso
 	 */
-	static validateCredentials(credentials: OracleCredentials): OracleCredentialsValidation {
-		// Validação básica
-		if (!isOracleCredentials(credentials)) {
-			return {
-				isValid: false,
-				errorMessage: 'Credenciais inválidas: campos obrigatórios ausentes',
-				mode: 'thin',
-			};
-		}
+  static validateCredentials(credentials: OracleCredentials): OracleCredentialsValidation {
+    // Validação básica
+    if (!isOracleCredentials(credentials)) {
+      return {
+        isValid: false,
+        errorMessage: 'Credenciais inválidas: campos obrigatórios ausentes',
+        mode: 'thin',
+      };
+    }
 
-		// Validação específica do modo thick
-		if (credentials.thinMode === false) {
-			if (!credentials.libDir) {
-				return {
-					isValid: false,
-					errorMessage: 'libDir é obrigatório para modo thick',
-					mode: 'thick',
-				};
-			}
+    // Validação específica do modo thick
+    if (credentials.thinMode === false) {
+      if (!credentials.libDir) {
+        return {
+          isValid: false,
+          errorMessage: 'libDir é obrigatório para modo thick',
+          mode: 'thick',
+        };
+      }
 
-			// Aqui poderia verificar se o diretório existe, etc.
-			// Por simplicidade, assumimos válido se libDir está presente
-		}
+      // Aqui poderia verificar se o diretório existe, etc.
+      // Por simplicidade, assumimos válido se libDir está presente
+    }
 
-		return {
-			isValid: true,
-			mode: credentials.thinMode === false ? 'thick' : 'thin',
-		};
-	}
+    return {
+      isValid: true,
+      mode: credentials.thinMode === false ? 'thick' : 'thin',
+    };
+  }
 
-	/**
+  /**
 	 * Converte credenciais legadas para o novo formato
 	 */
-	static migrateLegacyCredentials(legacyCredentials: any): OracleCredentials {
-		return {
-			user: legacyCredentials.user || '',
-			password: legacyCredentials.password || '',
-			connectionString: legacyCredentials.connectionString || '',
-			thinMode: legacyCredentials.thinMode !== false, // Default true para compatibilidade
-			libDir: legacyCredentials.libDir,
-			configDir: legacyCredentials.configDir,
-			errorUrl: legacyCredentials.errorUrl,
-		};
-	}
+  static migrateLegacyCredentials(legacyCredentials: any): OracleCredentials {
+    return {
+      user: legacyCredentials.user || '',
+      password: legacyCredentials.password || '',
+      connectionString: legacyCredentials.connectionString || '',
+      thinMode: legacyCredentials.thinMode !== false, // Default true para compatibilidade
+      libDir: legacyCredentials.libDir,
+      configDir: legacyCredentials.configDir,
+      errorUrl: legacyCredentials.errorUrl,
+    };
+  }
 
-	/**
+  /**
 	 * Sanitiza credenciais para logging (remove informações sensíveis)
 	 */
-	static sanitizeForLogging(credentials: OracleCredentials): Partial<OracleCredentials> {
-		return {
-			user: credentials.user,
-			connectionString: credentials.connectionString,
-			thinMode: credentials.thinMode,
-			libDir: credentials.libDir,
-			configDir: credentials.configDir,
-			// password e errorUrl omitidos por segurança
-		};
-	}
+  static sanitizeForLogging(credentials: OracleCredentials): Partial<OracleCredentials> {
+    return {
+      user: credentials.user,
+      connectionString: credentials.connectionString,
+      thinMode: credentials.thinMode,
+      libDir: credentials.libDir,
+      configDir: credentials.configDir,
+      // password e errorUrl omitidos por segurança
+    };
+  }
 }
 
 /**
  * Constantes úteis
  */
 export const ORACLE_DEFAULTS = {
-	THIN_MODE: true,
-	CONNECTION_TIMEOUT: 60,
-	RETRY_ATTEMPTS: 3,
-	RETRY_DELAY: 1000,
+  THIN_MODE: true,
+  CONNECTION_TIMEOUT: 60,
+  RETRY_ATTEMPTS: 3,
+  RETRY_DELAY: 1000,
 } as const;
 
 /**
