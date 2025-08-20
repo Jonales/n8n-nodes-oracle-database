@@ -1,5 +1,5 @@
 /**
- * Tipos de credenciais Oracle para n8n-nodes-oracle-database
+ * Tipos de credenciais Oracle para n8n-nodes
  * Suporte para modo thin (padrão) e thick com Oracle Client
  *
  * @author Jônatas Meireles Sousa Vieira
