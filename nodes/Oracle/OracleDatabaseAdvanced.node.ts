@@ -16,14 +16,11 @@ import {
   NodeConnectionType,
 } from 'n8n-workflow';
 import oracledb, { Connection } from 'oracledb';
-
 import { AQOperations } from './core/aqOperations';
 import { BulkOperationsFactory } from './core/bulkOperations';
 import { OracleConnectionPool } from './core/connectionPool';
 import { PLSQLExecutorFactory } from './core/plsqlExecutor';
 import { TransactionManagerFactory } from './core/transactionManager';
-
-// ✅ CORREÇÃO: Imports corrigidos
 import { OracleConnection, ConnectionConfig } from './connection';
 import { OracleCredentials } from './types/oracle.credentials.type';
 
@@ -146,11 +143,8 @@ export class OracleDatabaseAdvanced implements INodeType {
     ],
   };
 
-  /**
-     * ✅ CORREÇÃO: Método execute principal corrigido
-     */
+
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-    // ✅ CORREÇÃO: Preparar credenciais diretamente no contexto execute
     const rawCredentials = await this.getCredentials('oracleCredentials');
     const credentials: OracleCredentials = {
       user: String(rawCredentials.user),
@@ -165,12 +159,10 @@ export class OracleDatabaseAdvanced implements INodeType {
     const operationType = this.getNodeParameter('operationType', 0) as string;
     const connectionPoolType = this.getNodeParameter('connectionPool', 0) as string;
 
-    // ✅ CORREÇÃO: Declarar connection corretamente
     let connection: Connection | null = null;
     let returnItems: INodeExecutionData[] = [];
 
     try {
-      // ✅ CORREÇÃO: Criar ConnectionConfig corretamente tipado
       const connectionConfig: ConnectionConfig = {
         mode: credentials.thinMode !== false ? 'thin' : 'thick',
         libDir: credentials.libDir,
@@ -306,7 +298,6 @@ export class OracleDatabaseAdvanced implements INodeType {
         return this.helpers.returnJsonArray([result as unknown as IDataObject]);
       };
 
-      // ✅ CORREÇÃO: Configurar conexão baseada no tipo de pool e modo
       if (connectionPoolType === 'single') {
         const oracleConnection = new OracleConnection(credentials, connectionConfig);
         connection = await oracleConnection.getConnection();
@@ -316,7 +307,6 @@ export class OracleDatabaseAdvanced implements INodeType {
         connection = await pool.getConnection();
       }
 
-      // ✅ Garantir que connection foi definido
       if (!connection) {
         throw new Error('Falha ao obter conexão com o banco de dados');
       }
@@ -344,7 +334,7 @@ export class OracleDatabaseAdvanced implements INodeType {
 
       // Log de estatísticas de conexão
       const mode = credentials.thinMode !== false ? 'thin' : 'thick';
-      console.log(`✅ Operação concluída em modo ${mode}: ${returnItems.length} itens retornados`);
+      console.log(`Operação concluída em modo ${mode}: ${returnItems.length} itens retornados`);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       const mode = credentials.thinMode !== false ? 'thin' : 'thick';
@@ -357,7 +347,6 @@ export class OracleDatabaseAdvanced implements INodeType {
         },
       );
     } finally {
-      // ✅ CORREÇÃO: Verificar se connection foi definido antes de fechar
       if (connection) {
         try {
           await connection.close();

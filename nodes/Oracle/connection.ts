@@ -69,7 +69,7 @@ export class OracleConnection implements DatabaseConnection {
       // Importa utilitário de detecção (se disponível)
       const { getOracleClientConfig } = require('../script/oracle-detector');
             
-      this.log('info', '🔍 Auto-detectando Oracle Client...');
+      this.log('info', 'Auto-detectando Oracle Client...');
             
       const config = await getOracleClientConfig({
         autoInstall: this.connectionConfig.autoInstall,
@@ -88,13 +88,13 @@ export class OracleConnection implements DatabaseConnection {
         this.connectionConfig.libDir = config.libDir;
       }
 
-      this.log('info', `✅ Oracle Client detectado: modo ${config.mode}`);
+      this.log('info', `Oracle Client detectado: modo ${config.mode}`);
       if (config.libDir) {
-        this.log('debug', `📁 LibDir: ${config.libDir}`);
+        this.log('debug', `LibDir: ${config.libDir}`);
       }
 
     } catch (error) {
-      this.log('info', '⚠️ Auto-detecção falhou, usando detecção manual');
+      this.log('info', 'Auto-detecção falhou, usando detecção manual');
       this.log('debug', `Erro: ${error instanceof Error ? error.message : String(error)}`);
             
       // Fallback para detecção manual
@@ -127,10 +127,10 @@ export class OracleConnection implements DatabaseConnection {
             process.env.PATH?.toLowerCase().includes('oracle') ||
             this.connectionConfig.libDir
     ) {
-      this.log('info', '🔍 Detecção automática: modo THICK selecionado');
+      this.log('info', 'Detecção automática: modo THICK selecionado');
       return 'thick';
     }
-    this.log('info', '🔍 Detecção automática: modo THIN selecionado');
+    this.log('info', 'Detecção automática: modo THIN selecionado');
     return 'thin';
   }
 
@@ -169,22 +169,22 @@ export class OracleConnection implements DatabaseConnection {
 
       OracleConnection.clientInitialized = true;
 
-      this.log('info', '✅ Oracle Client inicializado em modo THICK');
-      this.log('debug', `📁 libDir: ${initOptions.libDir || 'default'}`);
-      this.log('debug', `⚙️ configDir: ${initOptions.configDir || 'default'}`);
+      this.log('info', 'Oracle Client inicializado em modo THICK');
+      this.log('debug', `libDir: ${initOptions.libDir || 'default'}`);
+      this.log('debug', `configDir: ${initOptions.configDir || 'default'}`);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
 
       if (errorMessage.includes('DPI-1047')) {
         // Oracle Client não encontrado, tenta auto-instalação
         if (this.connectionConfig.autoInstall) {
-          this.log('info', '📦 Oracle Client não encontrado, tentando instalação automática...');
+          this.log('info', 'Oracle Client não encontrado, tentando instalação automática...');
           await this.tryAutoInstall();
           return; // Recursão será chamada após instalação
         }
 
         throw new Error(
-          '❌ Oracle Client libraries não encontradas.\n' +
+          'Oracle Client libraries não encontradas.\n' +
                         'Verifique se:\n' +
                         '1. Oracle Instant Client está instalado\n' +
                         '2. LD_LIBRARY_PATH está configurado corretamente\n' +
@@ -194,12 +194,12 @@ export class OracleConnection implements DatabaseConnection {
         );
       }
       if (errorMessage.includes('DPI-1072')) {
-        this.log('info', '✅ Oracle Client já inicializado anteriormente');
+        this.log('info', 'Oracle Client já inicializado anteriormente');
         OracleConnection.clientInitialized = true;
         return;
       }
       throw new Error(
-        `❌ Falha ao inicializar Oracle Client em modo THICK: ${errorMessage}\n` +
+        `Falha ao inicializar Oracle Client em modo THICK: ${errorMessage}\n` +
                     'Verifique:\n' +
                     '- Oracle Instant Client instalado\n' +
                     '- LD_LIBRARY_PATH configurado\n' +
@@ -215,7 +215,7 @@ export class OracleConnection implements DatabaseConnection {
      */
   private async tryAutoInstall(): Promise<void> {
     try {
-      this.log('info', '🚀 Executando instalação automática do Oracle Client...');
+      this.log('info', 'Executando instalação automática do Oracle Client...');
             
       const OracleClientInstaller = require('../script/oracle-installer');
       const installer = new OracleClientInstaller();
@@ -224,14 +224,14 @@ export class OracleConnection implements DatabaseConnection {
             
       if (result?.libDir) {
         this.connectionConfig.libDir = result.libDir;
-        this.log('info', '✅ Oracle Client instalado automaticamente');
+        this.log('info', 'Oracle Client instalado automaticamente');
                 
         // Tenta inicializar novamente
         await this.initializeThickClient();
       }
             
     } catch (installError) {
-      this.log('info', '⚠️ Instalação automática falhou, mudando para modo thin');
+      this.log('info', 'Instalação automática falhou, mudando para modo thin');
       this.log('debug', `Erro de instalação: ${installError instanceof Error ? installError.message : String(installError)}`);
             
       // Fallback para thin mode
@@ -245,7 +245,7 @@ export class OracleConnection implements DatabaseConnection {
      */
   private configureThinMode(): void {
     oracledb.fetchAsString = this.connectionConfig.fetchAsStringTypes!;
-    this.log('info', '✅ Oracle Client configurado em modo THIN (sem Oracle Client necessário)');
+    this.log('info', 'Oracle Client configurado em modo THIN (sem Oracle Client necessário)');
   }
 
   /**
@@ -260,7 +260,7 @@ export class OracleConnection implements DatabaseConnection {
             
       this.log(
         'info',
-        `🔗 Conexão estabelecida [${this.connectionConfig.mode?.toUpperCase()}] como ${this.databaseConfig.user} em ${this.databaseConfig.connectionString}`,
+        `Conexão estabelecida [${this.connectionConfig.mode?.toUpperCase()}] como ${this.databaseConfig.user} em ${this.databaseConfig.connectionString}`,
       );
             
       return connection;
@@ -269,7 +269,7 @@ export class OracleConnection implements DatabaseConnection {
 
       if (this.connectionConfig.mode === 'thick') {
         throw new Error(
-          `❌ Falha na conexão em modo THICK: ${errorMessage}\n` +
+          `Falha na conexão em modo THICK: ${errorMessage}\n` +
                         'Verifique:\n' +
                         '- Oracle Client está funcionando corretamente\n' +
                         '- TNS names está configurado (se usando TNS)\n' +
@@ -279,7 +279,7 @@ export class OracleConnection implements DatabaseConnection {
         );
       } else {
         throw new Error(
-          `❌ Falha na conexão em modo THIN: ${errorMessage}\n` +
+          `Falha na conexão em modo THIN: ${errorMessage}\n` +
                         'Verifique:\n' +
                         '- String de conexão está correta\n' +
                         '- Credenciais estão válidas\n' +
@@ -298,7 +298,7 @@ export class OracleConnection implements DatabaseConnection {
       const conn = await this.getConnection();
       try {
         await conn.execute('SELECT 1 FROM DUAL');
-        this.log('info', '✅ Teste de conexão Oracle OK');
+        this.log('info', 'Teste de conexão Oracle OK');
         await conn.close();
         return true;
       } catch {
@@ -306,7 +306,7 @@ export class OracleConnection implements DatabaseConnection {
         throw new Error('Falha ao executar teste no banco Oracle.');
       }
     } catch (err) {
-      this.log('info', `❌ Não foi possível conectar/testar o banco: ${String(err)}`);
+      this.log('info', `Não foi possível conectar/testar o banco: ${String(err)}`);
       return false;
     }
   }

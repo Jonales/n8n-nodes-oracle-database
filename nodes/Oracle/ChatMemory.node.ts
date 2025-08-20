@@ -110,7 +110,6 @@ export class OracleChatMemory implements INodeType {
       const pool = await OracleConnectionPool.getPool(oracleCredentials);
       connection = await pool.getConnection();
 
-      // ✅ CORREÇÃO: Criar instância da classe para acessar métodos
       const chatMemoryInstance = new OracleChatMemory();
 
       switch (operation) {
