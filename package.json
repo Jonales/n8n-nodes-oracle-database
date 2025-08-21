@@ -1,22 +1,36 @@
 {
-  	"name": "@jonales/n8n-nodes-oracle-database",
-	"version": "1.0.1-rc.2",
-	"description": "Oracle Database node com recursos avançados para cargas pesadas e Oracle 19c+. Suporte completo para PL/SQL, bulk operations, connection pooling e Oracle Cloud Infrastructure com instalação automática do cliente Oracle.",
+  "name": "@jonales/n8n-nodes-oracle-database",
+  "version": "1.0.1-rc.2",
+  "description": "Oracle Database node com recursos avançados para cargas pesadas e Oracle 19c+. Suporte completo para PL/SQL, bulk operations, connection pooling e Oracle Cloud Infrastructure com instalação automática do cliente Oracle.",
   "keywords": [
     "n8n-community-node-package",
     "oracle"
   ],
-	"license": "MIT",
-	"homepage": "https://github.com/jonales/n8n-nodes-oracle-database",
-	"author": {
-		"name": "Jônatas Meireles Sousa Vieira",
-		"email": "jonatas.mei@outlook.com"
-	},
+  "license": "MIT",
+  "homepage": "https://github.com/jonales/n8n-nodes-oracle-database",
+  "author": {
+    "name": "Jônatas Meireles Sousa Vieira",
+    "email": "jonatas.mei@outlook.com"
+  },
   "repository": {
-		"type": "git",
-		"url": "git+https://github.com/jonales/n8n-nodes-oracle-database.git"
+    "type": "git",
+    "url": "git+https://github.com/jonales/n8n-nodes-oracle-database.git"
   },
   "main": "index.js",
+  "engines": {
+    "node": ">=18.18.0",
+    "npm": ">=9.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "packageManager": "npm@10.8.2",
   "scripts": {
     "build": "tsc && gulp build:icons",
     "dev": "tsc --watch",
@@ -41,9 +55,11 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
+    "@types/node": "^20.19.11",
     "@types/oracledb": "^6.9.1",
     "@types/request-promise-native": "~1.0.21",
     "@typescript-eslint/parser": "^8.40.0",
+    "@sentry/node": "^10.5.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
     "gulp": "^5.0.1",
     "n8n-core": "^1.14.1",
