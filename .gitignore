@@ -93,3 +93,4 @@ temp/
 .idea/
 
 .husky
+script/test-connection.js
