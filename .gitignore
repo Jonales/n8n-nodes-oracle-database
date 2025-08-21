@@ -94,4 +94,3 @@ temp/
 
 .husky
 script/test-connection.js
-package-lock.json
