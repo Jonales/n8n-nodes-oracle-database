@@ -1,26 +1,28 @@
-# n8n-nodes-oracle-database-parameterization
+# n8n-nodes-oracle-database
 
-[Oracle](https://docs.oracle.com/en/database/oracle/oracle-database/) database node for n8n
+![LOGOTIPO](image/README/oracle-n8n.png)
 
-Forked from https://www.npmjs.com/package/n8n-nodes-oracle-database with the intent of adding parameterization funcationality.
+[![npm version](https://img.shields.io/npm/v/@jonales/n8n-nodes-oracle-database.svg)](https://www.npmjs.com/package/@jonales/n8n-nodes-oracle-database)
+[![npm downloads](https://img.shields.io/npm/dt/@jonales/n8n-nodes-oracle-database.svg)](https://www.npmjs.com/package/@jonales/n8n-nodes-oracle-database)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7.2-blue.svg)](https://www.typescriptlang.org/)
+[![Oracle](https://img.shields.io/badge/Oracle-12.1%2B-red.svg)](https://docs.oracle.com/en/database/)
 
-## Normal Query Example![1708469710894](image/README/1708469710894.png)
 
-### New Functionality (parameters)
+<details>
+<summary>🇺🇸 English</summary>
 
-Example query:
+---
 
-![1708469967715](image/README/1708469967715.png)
+# 📖 Documentation in English
 
-Example Query Using IN operator:
+</details>
 
-![1708470132486](image/README/1708470132486.png)
+<details close>
+<summary>🇧🇷 Português</summary>
 
-## License
+---
 
-<<<<<<< HEAD
-[MIT](https://github.com/matheuspeluchi/n8n-nodes-oracle-database/blob/main/LICENSE.md)
-=======
 # 📖 Documentação em Português
 
 Node avançado **Oracle Database** para [n8n](https://n8n.io/) com **recursos empresariais para cargas pesadas** e suporte completo ao **Oracle 19c+**.
@@ -371,16 +373,16 @@ END;
 ```json
 // Configuração para inserção de 1 milhão de registros
 {
-	"operationType": "bulk",
-	"connectionPool": "highvolume", // Pool otimizado
-	"tableName": "customer_transactions",
-	"bulkOperation": "bulkInsert",
-	"options": {
-		"batchSize": 10000, // 10k por batch
-		"continueOnError": true, // Não parar em erros
-		"autoCommit": false, // Commit manual
-		"dmlRowCounts": true // Estatísticas detalhadas
-	}
+  "operationType": "bulk",
+  "connectionPool": "highvolume", // Pool otimizado
+  "tableName": "customer_transactions",
+  "bulkOperation": "bulkInsert",
+  "options": {
+    "batchSize": 10000, // 10k por batch
+    "continueOnError": true, // Não parar em erros
+    "autoCommit": false, // Commit manual
+    "dmlRowCounts": true // Estatísticas detalhadas
+  }
 }
 ```
 
@@ -389,32 +391,32 @@ END;
 ```json
 // Transação complexa com múltiplos savepoints
 {
-	"operationType": "transaction",
-	"connectionPool": "oltp",
-	"transactionOptions": {
-		"isolation": "READ_COMMITTED",
-		"timeout": 300, // 5 minutos
-		"maxRetries": 3,
-		"retryDelay": 1000
-	},
-	"operations": [
-		{
-			"sql": "INSERT INTO orders (...) VALUES (...)",
-			"savepoint": "order_created"
-		},
-		{
-			"sql": "UPDATE inventory SET stock = stock - :quantity WHERE product_id = :product_id",
-			"savepoint": "inventory_updated"
-		},
-		{
-			"sql": "INSERT INTO order_items (...) VALUES (...)",
-			"savepoint": "items_added"
-		},
-		{
-			"sql": "DELETE FROM shopping_cart WHERE customer_id = :customer_id",
-			"savepoint": "cart_cleared"
-		}
-	]
+  "operationType": "transaction",
+  "connectionPool": "oltp",
+  "transactionOptions": {
+    "isolation": "READ_COMMITTED",
+    "timeout": 300, // 5 minutos
+    "maxRetries": 3,
+    "retryDelay": 1000
+  },
+  "operations": [
+    {
+      "sql": "INSERT INTO orders (...) VALUES (...)",
+      "savepoint": "order_created"
+    },
+    {
+      "sql": "UPDATE inventory SET stock = stock - :quantity WHERE product_id = :product_id",
+      "savepoint": "inventory_updated"
+    },
+    {
+      "sql": "INSERT INTO order_items (...) VALUES (...)",
+      "savepoint": "items_added"
+    },
+    {
+      "sql": "DELETE FROM shopping_cart WHERE customer_id = :customer_id",
+      "savepoint": "cart_cleared"
+    }
+  ]
 }
 ```
 
@@ -423,29 +425,29 @@ END;
 ```json
 // Enviar mensagem crítica para fila
 {
-	"operationType": "queue",
-	"queueName": "CRITICAL_ORDERS_QUEUE",
-	"operation": "enqueue",
-	"message": {
-		"payload": {
-			"orderId": 12345,
-			"customerId": 67890,
-			"priority": "URGENT",
-			"amount": 1599.99,
-			"metadata": {
-				"source": "n8n_workflow",
-				"timestamp": "2024-01-15T10:30:00Z"
-			}
-		},
-		"priority": 1, // Alta prioridade
-		"correlationId": "ORD-12345",
-		"delay": 0, // Processar imediatamente
-		"expiration": 3600 // Expira em 1 hora
-	},
-	"options": {
-		"visibility": "ON_COMMIT",
-		"deliveryMode": "PERSISTENT"
-	}
+  "operationType": "queue",
+  "queueName": "CRITICAL_ORDERS_QUEUE",
+  "operation": "enqueue",
+  "message": {
+    "payload": {
+      "orderId": 12345,
+      "customerId": 67890,
+      "priority": "URGENT",
+      "amount": 1599.99,
+      "metadata": {
+        "source": "n8n_workflow",
+        "timestamp": "2024-01-15T10:30:00Z"
+      }
+    },
+    "priority": 1, // Alta prioridade
+    "correlationId": "ORD-12345",
+    "delay": 0, // Processar imediatamente
+    "expiration": 3600 // Expira em 1 hora
+  },
+  "options": {
+    "visibility": "ON_COMMIT",
+    "deliveryMode": "PERSISTENT"
+  }
 }
 ```
 
@@ -779,8 +781,8 @@ __tests__/
 
 ```json
 {
-	"oracledb": "^6.9.0", // Oracle client libraries
-	"n8n-workflow": "^1.82.0" // n8n workflow types
+  "oracledb": "^6.9.0", // Oracle client libraries
+  "n8n-workflow": "^1.82.0" // n8n workflow types
 }
 ```
 
@@ -788,19 +790,19 @@ __tests__/
 
 ```json
 {
-	"typescript": "^5.7.2", // TypeScript latest
-	"@typescript-eslint/eslint-plugin": "^8.39.1", // TS ESLint rules
-	"@typescript-eslint/parser": "^8.39.1", // TS parser
-	"eslint": "^9.33.0", // Modern ESLint
-	"@eslint/js": "^9.33.0", // ESLint flat config
-	"prettier": "^3.3.3", // Code formatter
-	"jest": "^30.0.5", // Testing framework
-	"ts-jest": "^30.0.3", // Jest TS support
-	"gulp": "^5.0.0", // Build automation
-	"semantic-release": "^24.2.0", // Automated releases
-	"husky": "^9.1.7", // Git hooks
-	"@types/node": "^22.10.1", // Node.js types
-	"rimraf": "^6.0.1" // Cross-platform rm -rf
+  "typescript": "^5.7.2", // TypeScript latest
+  "@typescript-eslint/eslint-plugin": "^8.39.1", // TS ESLint rules
+  "@typescript-eslint/parser": "^8.39.1", // TS parser
+  "eslint": "^9.33.0", // Modern ESLint
+  "@eslint/js": "^9.33.0", // ESLint flat config
+  "prettier": "^3.3.3", // Code formatter
+  "jest": "^30.0.5", // Testing framework
+  "ts-jest": "^30.0.3", // Jest TS support
+  "gulp": "^5.0.0", // Build automation
+  "semantic-release": "^24.2.0", // Automated releases
+  "husky": "^9.1.7", // Git hooks
+  "@types/node": "^22.10.1", // Node.js types
+  "rimraf": "^6.0.1" // Cross-platform rm -rf
 }
 ```
 
@@ -926,4 +928,3 @@ Este projeto está sob **MIT License** - veja [LICENSE.md](LICENSE.md) para deta
 </div>
 
 </details>
->>>>>>> parent of cc516d8 (Update README.md)
