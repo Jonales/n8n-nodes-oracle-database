@@ -1,6 +1,6 @@
 {
   "name": "@jonales/n8n-nodes-oracle-database",
-  "version": "1.0.1-rc.2",
+  "version": "1.0.1-rc.3",
   "description": "Oracle Database node com recursos avançados para cargas pesadas e Oracle 19c+. Suporte completo para PL/SQL, bulk operations, connection pooling e Oracle Cloud Infrastructure com instalação automática do cliente Oracle.",
   "keywords": [
     "n8n-community-node-package",
@@ -34,15 +34,37 @@
   "scripts": {
     "clean": "npx rimraf dist tsconfig.tsbuildinfo",
     "prebuild": "npm run clean",
-    "build": "tsc && gulp build:icons",
-    "dev": "tsc --watch",
-    "format": "prettier nodes credentials --write",
+    "build": "tsc -p tsconfig.json && gulp build:complete",
+    "build:watch": "tsc -p tsconfig.json --watch",
+    "build:assets": "gulp build:assets",
+    "dev": "npm run build:watch",
+    "format": "prettier . --write --ignore-path .gitignore",
+    "format:check": "prettier . --check --ignore-path .gitignore",
     "lint": "eslint . --ext .ts,.js --cache",
     "lint:fix": "eslint . --ext .ts,.js --cache --fix",
-    "prepublishOnly": "npm run build",
-    "test": "jest --passWithNoTests",
-    "test:watch": "jest --watch --passWithNoTests",
-    "test:coverage": "jest --coverage --passWithNoTests"
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "prepublishOnly": "npm run clean && npm run build && npm run lint ",
+    "prepare": "husky",
+    "validate": "npm run type-check && npm run lint ",
+    "dev:assets": "gulp watch",
+    "clean:dist": "gulp cleanup:dist",
+    "setup": "node script/setup-oracle.js",
+    "setup:force": "node script/setup-oracle.js --force",
+    "setup:skip-deps": "node script/setup-oracle.js --skip-deps",
+    "install-oracle": "node script/oracle-installer.js",
+    "install-oracle:force": "node script/oracle-installer.js --force",
+    "test-connection": "node script/test-connection.js",
+    "detect-oracle": "node -e \"const {getOracleClientConfig} = require('./script/oracle-detector'); getOracleClientConfig().then(console.log).catch(console.error);\"",
+    "clean:oracle": "node -e \"const {OracleClientDetector} = require('./script/oracle-detector'); new OracleClientDetector().cleanup();\"",
+    "postinstall": "npm run setup",
+    "validate:oracle": "node script/setup-oracle.js --skip-deps --skip-oracle",
+    "help": "node script/setup-oracle.js --help",
+    "oracle:status": "node script/oracle-status.js",
+    "oracle:repair": "node script/oracle-repair.js"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "files": [
     "dist"
@@ -76,7 +98,9 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
     "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^16.3.0",
     "gulp": "^5.0.1",
+    "husky": "^9.1.7",
     "jest": "^30.0.5",
     "n8n-core": "^1.106.2",
     "n8n-workflow": "^1.105.0",
