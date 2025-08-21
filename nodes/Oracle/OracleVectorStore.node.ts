@@ -6,13 +6,15 @@
  * @version 1.1.0
  */
 
+//import { IExecuteFunctions } from "n8n-core";
+
 import {
-  IExecuteFunctions,
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
   NodeConnectionType,
   NodeOperationError,
+  IExecuteFunctions,
 } from 'n8n-workflow';
 import oracledb, { Connection } from 'oracledb';
 import { OracleConnectionPool } from './core/connectionPool';

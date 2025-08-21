@@ -1,4 +1,12 @@
-import { IExecuteFunctions } from "n8n-core";
+/**
+ * Oracle Vector Store Node para n8n
+ * Gerenciamento de vector store usando Oracle Database 23ai
+ *
+ * @author Jônatas Meireles Sousa Vieira
+ * @version 1.1.0
+ */
+
+//import { IExecuteFunctions } from "n8n-core";
 
 import {
   IDataObject,
@@ -6,41 +14,42 @@ import {
   INodeType,
   INodeTypeDescription,
   NodeOperationError,
-} from "n8n-workflow";
-import oracledb from "oracledb";
-import { OracleConnection } from "./core/connection";
+  IExecuteFunctions,
+} from 'n8n-workflow';
+import oracledb from 'oracledb';
+import { OracleConnection } from './core/connection';
 
 export class OracleDatabase implements INodeType {
   description: INodeTypeDescription = {
-    displayName: "Oracle Database",
-    name: "Oracle Database",
-    icon: "file:oracle.svg",
-    group: ["input"],
+    displayName: 'Oracle Database',
+    name: 'Oracle Database',
+    icon: 'file:oracle.svg',
+    group: ['input'],
     version: 1,
-    description: "Upsert, get, add and update data in Oracle database",
+    description: 'Upsert, get, add and update data in Oracle database',
     defaults: {
-      name: "Oracle Database",
+      name: 'Oracle Database',
     },
-    inputs: ["main"],
-    outputs: ["main"],
+    inputs: ['main'],
+    outputs: ['main'],
     credentials: [
       {
-        name: "oracleCredentials",
+        name: 'oracleCredentials',
         required: true,
       },
     ],
     properties: [
       {
-        displayName: "SQL Statement",
-        name: "query",
-        type: "string",
+        displayName: 'SQL Statement',
+        name: 'query',
+        type: 'string',
         typeOptions: {
           alwaysOpenEditWindow: true,
         },
-        default: "",
-        placeholder: "SELECT id, name FROM product WHERE id < :param_name",
+        default: '',
+        placeholder: 'SELECT id, name FROM product WHERE id < :param_name',
         required: true,
-        description: "The SQL query to execute",
+        description: 'The SQL query to execute',
       },
       {
         displayName: 'Parameters',
@@ -104,14 +113,22 @@ export class OracleDatabase implements INodeType {
     ],
   };
 
+  
+
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-    if (typeof String.prototype.replaceAll === "undefined") {
-      String.prototype.replaceAll = function (match, replace) {
-        return this.replace(new RegExp(match, 'g'), () => replace);
-      }
+    if (typeof String.prototype.replaceAll === 'undefined') {
+      (String.prototype as any).replaceAll = function (match: string | RegExp, replace: string): string {
+        if (match instanceof RegExp) {
+          // Se já tem flag global, usa como está; senão, adiciona 'g'
+          const globalRegex = match.global ? match : new RegExp(match.source, match.flags + 'g');
+          return this.replace(globalRegex, replace);
+        }
+        // Para strings, split/join é mais eficiente
+        return this.split(match).join(replace);
+      };
     }
 
-    const credentials = await this.getCredentials("oracleCredentials");
+    const credentials = await this.getCredentials('oracleCredentials');
     const oracleCredentials = {
       user: String(credentials.user),
       password: String(credentials.password),
@@ -128,7 +145,7 @@ export class OracleDatabase implements INodeType {
 
     try {
       //get query
-      let query = this.getNodeParameter("query", 0) as string;
+      let query = this.getNodeParameter('query', 0) as string;
 
       //get list of param objects entered by user:
       const parameterIDataObjectList = ((this.getNodeParameter('params', 0, {}) as IDataObject).values as { name: string, value: string | number, datatype: string, parseInStatement: boolean }[]) || [];
@@ -137,7 +154,7 @@ export class OracleDatabase implements INodeType {
       const bindParameters: { [key: string]: oracledb.BindParameter } = parameterIDataObjectList.reduce((result: { [key: string]: oracledb.BindParameter }, item) => {
 
         //set data type to be correct type
-        let datatype: number | string | undefined = undefined;
+        let datatype: oracledb.DbType | undefined = undefined;
         if (item.datatype && item.datatype === 'number') {
           datatype = oracledb.NUMBER;
         } else {
@@ -163,13 +180,13 @@ export class OracleDatabase implements INodeType {
             result[newParamName] = { type: datatype, val: item.datatype && item.datatype === 'number' ? Number(valList[i]) : String(valList[i]) };
 
             //create sql sting for list with new param names
-            generatedSqlString += `:${newParamName},`
+            generatedSqlString += `:${newParamName},`;
           }
 
           generatedSqlString = generatedSqlString.slice(0, -1) + ')'; //replace trailing comma with closing parenthesis.
 
           //replace all occurrences of original parameter name with new generated sql
-          query = query.replaceAll(":" + item.name, generatedSqlString);
+          query = query.replaceAll(':' + item.name, generatedSqlString);
 
           return result;
         }
@@ -214,7 +231,13 @@ declare global {
 }
 
 if (typeof String.prototype.replaceAll === 'undefined') {
-  String.prototype.replaceAll = function (match: string | RegExp, replace: string): string {
-    return this.replace(new RegExp(match, 'g'), replace);
+  (String.prototype as any).replaceAll = function (match: string | RegExp, replace: string): string {
+    if (match instanceof RegExp) {
+      if (!match.global) {
+        match = new RegExp(match.source, match.flags + 'g');
+      }
+      return this.replace(match, replace);
+    }
+    return this.split(match).join(replace);
   };
 }

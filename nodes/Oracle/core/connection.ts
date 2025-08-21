@@ -1,7 +1,15 @@
-import oracledb, { Connection, ConnectionAttributes } from "oracledb";
+/**
+ * Oracle Vector Store Node para n8n
+ * Gerenciamento de vector store usando Oracle Database 23ai
+ *
+ * @author Jônatas Meireles Sousa Vieira
+ * @version 1.1.0
+ */
 
-import { DatabaseConnection } from "./interfaces/database.interface";
-import { OracleCredentials } from "./types/oracle.credentials.type";
+import oracledb, { Connection, ConnectionAttributes } from 'oracledb';
+
+import { DatabaseConnection } from './interfaces/database.interface';
+import { OracleCredentials } from './types/oracle.credentials.type';
 
 export class OracleConnection implements DatabaseConnection<Connection> {
   private databaseConfig: ConnectionAttributes;
