@@ -1,39 +1,30 @@
 {
-	"$schema": "https://json.schemastore.org/tsconfig",
-	"display": "n8n-nodes-oracle-database",
-
 	"compilerOptions": {
-		"target": "ES2022",
-		"lib": ["ES2022"],
-		"module": "NodeNext",
-		"moduleResolution": "NodeNext",
-
-		"outDir": "./dist",
-		"rootDir": ".",
-		"declaration": true,
-		"declarationMap": true,
-		"sourceMap": true,
-		"removeComments": true,
-		"incremental": true,
-		"tsBuildInfoFile": "./dist/.tsbuildinfo",
-		"noEmitOnError": true,
-
-		"strict": true,
+		"lib": [
+			"es2017",
+			"es2019"
+		],
+		"types": [
+			"node",
+		],
+		"module": "commonjs",
 		"noImplicitAny": true,
+		"removeComments": true,
 		"strictNullChecks": true,
-		"exactOptionalPropertyTypes": false,
-		"noUncheckedIndexedAccess": false,
-		"useUnknownInCatchVariables": true,
-
-		"esModuleInterop": true,
-		"allowSyntheticDefaultImports": true,
+		"strict": true,
+		"preserveConstEnums": true,
 		"resolveJsonModule": true,
-
-		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true,
-		"types": ["node", "jest"]
+		"declaration": true,
+		"outDir": "./dist/",
+		"target": "es2019",
+		"sourceMap": true,
+		"esModuleInterop": true,
+		"useUnknownInCatchVariables": false,
 	},
-
-	"include": ["credentials/**/*", "nodes/**/*"],
-	"exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+	"include": [
+		"credentials/**/*",
+		"nodes/**/*",
+		"nodes/**/*.json",
+		"package.json",
+	],
 }

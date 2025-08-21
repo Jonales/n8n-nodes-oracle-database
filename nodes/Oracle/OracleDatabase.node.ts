@@ -1,63 +1,46 @@
-/**
- * Tipos de credenciais Oracle para n8n-nodes
- * Suporte para modo thin (padrão) e thick com Oracle Client
- *
- * @author Jônatas Meireles Sousa Vieira
- * @version 1.0.0
- */
+import { IExecuteFunctions } from "n8n-core";
 
-import { randomUUID } from 'crypto';
 import {
   IDataObject,
-  IExecuteFunctions,
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
-  NodeConnectionType,
   NodeOperationError,
-} from 'n8n-workflow';
-import oracledb from 'oracledb';
-import { OracleConnection, ConnectionConfig } from './connection';
-
-interface ParameterItem {
-    name: string;
-    value: string | number;
-    datatype: string;
-    parseInStatement: boolean;
-}
+} from "n8n-workflow";
+import oracledb from "oracledb";
+import { OracleConnection } from "./core/connection";
 
 export class OracleDatabase implements INodeType {
   description: INodeTypeDescription = {
-    displayName: 'Oracle Database with Parameterization',
-    name: 'oracleDatabaseParameterized',
-    icon: 'file:oracle.svg',
-    group: ['input'],
+    displayName: "Oracle Database",
+    name: "Oracle Database",
+    icon: "file:oracle.svg",
+    group: ["input"],
     version: 1,
-    description:
-            'Execute SQL queries on Oracle database with parameter support - embedded thin/thick client',
+    description: "Upsert, get, add and update data in Oracle database",
     defaults: {
-      name: 'Oracle Database',
+      name: "Oracle Database",
     },
-    inputs: ['main' as NodeConnectionType],
-    outputs: ['main' as NodeConnectionType],
+    inputs: ["main"],
+    outputs: ["main"],
     credentials: [
       {
-        name: 'oracleCredentials',
+        name: "oracleCredentials",
         required: true,
       },
     ],
     properties: [
       {
-        displayName: 'SQL Statement',
-        name: 'query',
-        type: 'string',
+        displayName: "SQL Statement",
+        name: "query",
+        type: "string",
         typeOptions: {
           alwaysOpenEditWindow: true,
         },
-        default: '',
-        placeholder: 'SELECT id, name FROM product WHERE id < :param_name',
+        default: "",
+        placeholder: "SELECT id, name FROM product WHERE id < :param_name",
         required: true,
-        description: 'The SQL query to execute. Use :param_name for parameters.',
+        description: "The SQL query to execute",
       },
       {
         displayName: 'Parameters',
@@ -69,7 +52,6 @@ export class OracleDatabase implements INodeType {
           multipleValues: true,
         },
         default: {},
-        description: 'Parameters for the SQL query',
         options: [
           {
             displayName: 'Values',
@@ -81,7 +63,7 @@ export class OracleDatabase implements INodeType {
                 type: 'string',
                 default: '',
                 placeholder: 'e.g. param_name',
-                hint: 'Parameter name (do not include ":")',
+                hint: 'Do not start with ":"',
                 required: true,
               },
               {
@@ -100,8 +82,8 @@ export class OracleDatabase implements INodeType {
                 default: 'string',
                 options: [
                   { name: 'String', value: 'string' },
-                  { name: 'Number', value: 'number' },
-                ],
+                  { name: 'Number', value: 'number' }
+                ]
               },
               {
                 displayName: 'Parse for IN statement',
@@ -109,12 +91,12 @@ export class OracleDatabase implements INodeType {
                 type: 'options',
                 required: true,
                 default: false,
-                hint: 'If "Yes", the "Value" field should be comma-separated values (e.g., 1,2,3 or str1,str2,str3)',
+                hint: 'If "Yes" the "Value" field should be a string of comma-separated values. i.e: 1,2,3 or str1,str2,str3',
                 options: [
                   { name: 'No', value: false },
-                  { name: 'Yes', value: true },
-                ],
-              },
+                  { name: 'Yes', value: true }
+                ]
+              }
             ],
           },
         ],
@@ -122,214 +104,100 @@ export class OracleDatabase implements INodeType {
     ],
   };
 
-  /**
-     * Gera um ID único para parâmetros
-     */
-  private generateUniqueId(): string {
-    try {
-      return randomUUID().replaceAll('-', '_');
-    } catch {
-      // Fallback para ambientes que não suportam randomUUID
-      return (
-        Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-      );
-    }
-  }
-
-  /**
-     * Valida os parâmetros fornecidos pelo usuário
-     */
-  public validateParameters(parameters: ParameterItem[], node: any): void {
-    for (const param of parameters) {
-      if (!param.name || param.name.trim() === '') {
-        throw new NodeOperationError(node, 'Parameter name cannot be empty');
-      }
-      if (param.parseInStatement && (!param.value || param.value.toString().trim() === '')) {
-        throw new NodeOperationError(
-          node,
-          `Parameter '${param.name}' marked for IN statement but has no values`,
-        );
-      }
-    }
-  }
-
-  /**
-     * Converte o tipo de dados para o formato do OracleDB
-     */
-  private getOracleDataType(datatype: string): oracledb.DbType {
-    return datatype === 'number' ? oracledb.NUMBER : oracledb.STRING;
-  }
-
-  /**
-     * Converte o valor para o tipo apropriado
-     */
-  private convertValue(value: string | number, datatype: string): string | number {
-    return datatype === 'number' ? Number(value) : String(value);
-  }
-
-  /**
-     * Processa parâmetros normais (não IN statement)
-     */
-  private processNormalParameter(
-    item: ParameterItem,
-    bindParameters: { [key: string]: oracledb.BindParameter },
-  ): void {
-    bindParameters[item.name] = {
-      type: this.getOracleDataType(item.datatype),
-      val: this.convertValue(item.value, item.datatype),
-    };
-  }
-
-  /**
-     * Processa parâmetros para IN statement
-     */
-  private processInStatementParameter(
-    item: ParameterItem,
-    bindParameters: { [key: string]: oracledb.BindParameter },
-    query: string,
-    node: any,
-  ): string {
-    const valList = item.value
-      .toString()
-      .split(',')
-      .map(v => v.trim());
-    if (valList.length === 0) {
-      throw new NodeOperationError(
-        node,
-        `Parameter '${item.name}' for IN statement cannot be empty`,
-      );
-    }
-    const placeholders: string[] = [];
-    const datatype = this.getOracleDataType(item.datatype);
-    valList.forEach((val, index) => {
-      const paramName = `${item.name}_${index}_${this.generateUniqueId()}`;
-      placeholders.push(`:${paramName}`);
-      bindParameters[paramName] = {
-        type: datatype,
-        val: this.convertValue(val, item.datatype),
-      };
-    });
-    const inClause = `(${placeholders.join(',')})`;
-    return query.replaceAll(`:${item.name}`, inClause);
-  }
-
-  /**
-     * Processa todos os parâmetros e constrói o objeto de bind parameters
-     */
-  private processParameters(
-    parameters: ParameterItem[],
-    query: string,
-    node: any,
-  ): {
-        bindParameters: { [key: string]: oracledb.BindParameter };
-        processedQuery: string;
-    } {
-    this.validateParameters(parameters, node);
-    const bindParameters: { [key: string]: oracledb.BindParameter } = {};
-    let processedQuery = query;
-    for (const item of parameters) {
-      if (item.parseInStatement) {
-        processedQuery = this.processInStatementParameter(
-          item,
-          bindParameters,
-          processedQuery,
-          node,
-        );
-      } else {
-        this.processNormalParameter(item, bindParameters);
-      }
-    }
-    return { bindParameters, processedQuery };
-  }
-
-  /**
-     * Valida a query SQL
-     */
-  public validateQuery(query: string, node: any): void {
-    if (!query || query.trim() === '') {
-      throw new NodeOperationError(node, 'SQL query cannot be empty');
-    }
-  }
-
-  /**
-     * Executa o nó
-     */
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-    const credentials = await this.getCredentials('oracleCredentials');
+    if (typeof String.prototype.replaceAll === "undefined") {
+      String.prototype.replaceAll = function (match, replace) {
+        return this.replace(new RegExp(match, 'g'), () => replace);
+      }
+    }
 
-    // ✅ CORREÇÃO: Criar ConnectionConfig corretamente tipado
-    const connectionConfig: ConnectionConfig = {
-      mode: credentials.thinMode !== false ? 'thin' : 'thick',
-      libDir: credentials.libDir as string | undefined,
-      configDir: credentials.configDir as string | undefined,
-      errorUrl: credentials.errorUrl as string | undefined,
-    };
-
+    const credentials = await this.getCredentials("oracleCredentials");
     const oracleCredentials = {
       user: String(credentials.user),
       password: String(credentials.password),
       connectionString: String(credentials.connectionString),
     };
 
-    const db = new OracleConnection(oracleCredentials, connectionConfig);
+    const db = new OracleConnection(
+      oracleCredentials,
+      Boolean(credentials.thinMode)
+    );
+    const connection = await db.getConnection();
 
-    let connection;
-    let returnItems: INodeExecutionData[] = [];
+    let returnItems = [];
 
     try {
-      connection = await db.getConnection();
+      //get query
+      let query = this.getNodeParameter("query", 0) as string;
 
-      // Obter e validar a query
-      const query = this.getNodeParameter('query', 0) as string;
+      //get list of param objects entered by user:
+      const parameterIDataObjectList = ((this.getNodeParameter('params', 0, {}) as IDataObject).values as { name: string, value: string | number, datatype: string, parseInStatement: boolean }[]) || [];
+      
+      //convert parameterIDataObjectList to map of BindParameters that OracleDB wants
+      const bindParameters: { [key: string]: oracledb.BindParameter } = parameterIDataObjectList.reduce((result: { [key: string]: oracledb.BindParameter }, item) => {
 
-      // Criar uma instância da classe para acessar os métodos privados
-      const oracleInstance = new OracleDatabase();
+        //set data type to be correct type
+        let datatype: number | string | undefined = undefined;
+        if (item.datatype && item.datatype === 'number') {
+          datatype = oracledb.NUMBER;
+        } else {
+          datatype = oracledb.STRING;
+        }
 
-      oracleInstance.validateQuery(query, this.getNode());
+        if (!item.parseInStatement) {
+          //normal process.
+          result[item.name] = { type: datatype, val: item.datatype && item.datatype === 'number' ? Number(item.value) : String(item.value) };
+          return result;
+        } else {
+          //in this else block, we make it possible to use a parameter for an IN statement
 
-      // Obter parâmetros do usuário
-      const parameterList =
-                ((this.getNodeParameter('params', 0, {}) as IDataObject).values as ParameterItem[]) || [];
+          const valList = item.value.toString().split(',');
+          let generatedSqlString = '(';
+          const crypto = require('crypto');
+          for (let i = 0; i < valList.length; i++) {
+            //generate unique parameter names for each item in list
+            const uniqueId: String = crypto.randomUUID().replaceAll('-', '_'); //dashes don't work in parameter names.
+            const newParamName = item.name + uniqueId;
 
-      // Processar parâmetros
-      const { bindParameters, processedQuery } = oracleInstance.processParameters(
-        parameterList,
-        query,
-        this.getNode(),
+            //add new param to param list
+            result[newParamName] = { type: datatype, val: item.datatype && item.datatype === 'number' ? Number(valList[i]) : String(valList[i]) };
+
+            //create sql sting for list with new param names
+            generatedSqlString += `:${newParamName},`
+          }
+
+          generatedSqlString = generatedSqlString.slice(0, -1) + ')'; //replace trailing comma with closing parenthesis.
+
+          //replace all occurrences of original parameter name with new generated sql
+          query = query.replaceAll(":" + item.name, generatedSqlString);
+
+          return result;
+        }
+      }, {});
+
+      //execute query
+      const result = await connection.execute(
+        query, 
+        bindParameters, 
+        {
+          outFormat: oracledb.OUT_FORMAT_OBJECT,
+          autoCommit: true,
+        },
       );
 
-      // Log para debug (opcional - remova em produção)
-      console.log('Executing query:', processedQuery);
-      console.log('Parameters:', Object.keys(bindParameters));
+      returnItems = this.helpers.returnJsonArray(
+        result as unknown as IDataObject[]
+      );
 
-      // Executar query
-      const result = await connection.execute(processedQuery, bindParameters, {
-        outFormat: oracledb.OUT_FORMAT_OBJECT,
-        autoCommit: true,
-      });
-
-      returnItems = this.helpers.returnJsonArray(result.rows as unknown as IDataObject[]);
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-
-      // Log detalhado para debug
-      console.error('Oracle Database execution failed:', {
-        error: errorMessage,
-        nodeId: this.getNode().id,
-      });
-
-      throw new NodeOperationError(this.getNode(), `Oracle Database Error: ${errorMessage}`, {
-        description: 'Check your SQL query and parameters for syntax errors',
-      });
+    } catch (error) {
+      throw new NodeOperationError(this.getNode(), error.message);
     } finally {
       if (connection) {
         try {
           await connection.close();
-        } catch (closeError: unknown) {
+        } catch (error) {
           console.error(
-            `OracleDB: Failed to close the database connection: ${
-              closeError instanceof Error ? closeError.message : String(closeError)
-            }`,
+            `OracleDB: Failed to close the database connection: ${error}`
           );
         }
       }
@@ -337,4 +205,16 @@ export class OracleDatabase implements INodeType {
 
     return this.prepareOutputData(returnItems);
   }
+}
+
+declare global {
+  interface String {
+    replaceAll(match: string | RegExp, replace: string): string;
+  }
+}
+
+if (typeof String.prototype.replaceAll === 'undefined') {
+  String.prototype.replaceAll = function (match: string | RegExp, replace: string): string {
+    return this.replace(new RegExp(match, 'g'), replace);
+  };
 }
