@@ -9,13 +9,13 @@
 //import { IExecuteFunctions } from "n8n-core";
 
 import {
-  NodeOperationError,
   IDataObject,
+  IExecuteFunctions,
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
   NodeConnectionType,
-  IExecuteFunctions,
+  NodeOperationError,
 } from 'n8n-workflow';
 import oracledb, { Connection } from 'oracledb';
 
@@ -25,17 +25,16 @@ import { OracleConnectionPool } from './core/connectionPool';
 import { PLSQLExecutorFactory } from './core/plsqlExecutor';
 import { TransactionManagerFactory } from './core/transactionManager';
 
-
-import { OracleConnection, ConnectionConfig } from './core/connection';
+import { ConnectionConfig, OracleConnection } from './core/connection';
 import { OracleCredentials } from './core/types/oracle.credentials.type';
 
 /**
  * Interface para parâmetros dos nodes
  */
 interface NodeParameterItem {
-    name: string;
-    value: string | number;
-    datatype: string;
+	name: string;
+	value: string | number;
+	datatype: string;
 }
 
 export class OracleDatabaseAdvanced implements INodeType {
@@ -46,7 +45,7 @@ export class OracleDatabaseAdvanced implements INodeType {
     group: ['transform'],
     version: 1,
     description:
-            'Oracle Database com recursos avançados para cargas pesadas e Oracle 19c+. Suporte para thin/thick mode.',
+			'Oracle Database com recursos avançados para cargas pesadas e Oracle 19c+. Suporte para thin/thick mode.',
     defaults: {
       name: 'Oracle Database Advanced',
     },
@@ -148,11 +147,7 @@ export class OracleDatabaseAdvanced implements INodeType {
     ],
   };
 
-
-
-
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-
     const rawCredentials = await this.getCredentials('oracleCredentials');
     const credentials: OracleCredentials = {
       user: String(rawCredentials.user),
@@ -167,12 +162,10 @@ export class OracleDatabaseAdvanced implements INodeType {
     const operationType = this.getNodeParameter('operationType', 0) as string;
     const connectionPoolType = this.getNodeParameter('connectionPool', 0) as string;
 
-
     let connection: Connection | null = null;
     let returnItems: INodeExecutionData[] = [];
 
     try {
-
       const connectionConfig: ConnectionConfig = {
         mode: credentials.thinMode !== false ? 'thin' : 'thick',
         libDir: credentials.libDir,
@@ -197,8 +190,8 @@ export class OracleDatabaseAdvanced implements INodeType {
       // Função auxiliar para processamento de parâmetros
       const processParameters = (): { [key: string]: any } => {
         const parameterList =
-                    ((this.getNodeParameter('params', 0, {}) as IDataObject).values as NodeParameterItem[]) ||
-                    [];
+					((this.getNodeParameter('params', 0, {}) as IDataObject).values as NodeParameterItem[]) ||
+					[];
 
         const bindParameters: { [key: string]: any } = {};
 
@@ -308,7 +301,6 @@ export class OracleDatabaseAdvanced implements INodeType {
         return this.helpers.returnJsonArray([result as unknown as IDataObject]);
       };
 
-
       if (connectionPoolType === 'single') {
         const oracleConnection = new OracleConnection(credentials, connectionConfig);
         connection = await oracleConnection.getConnection();
@@ -317,7 +309,6 @@ export class OracleDatabaseAdvanced implements INodeType {
         const pool = await OracleConnectionPool.getPool(credentials, poolConfig);
         connection = await pool.getConnection();
       }
-
 
       if (!connection) {
         throw new Error('Falha ao obter conexão com o banco de dados');
@@ -359,13 +350,12 @@ export class OracleDatabaseAdvanced implements INodeType {
         },
       );
     } finally {
-
       if (connection) {
         try {
           await connection.close();
         } catch (closeError: unknown) {
           const closeErrorMessage =
-                        closeError instanceof Error ? closeError.message : String(closeError);
+						closeError instanceof Error ? closeError.message : String(closeError);
           console.error(`Falha ao fechar conexão: ${closeErrorMessage}`);
         }
       }

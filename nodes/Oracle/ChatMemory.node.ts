@@ -1,19 +1,19 @@
 /**
-* Tipos de credenciais Oracle para n8n-nodes
-* Suporte para modo thin (padrão) e thick com Oracle Client
-*
-* @author Jônatas Meireles Sousa Vieira
-* @version 1.0.0
-*/
+ * Tipos de credenciais Oracle para n8n-nodes
+ * Suporte para modo thin (padrão) e thick com Oracle Client
+ *
+ * @author Jônatas Meireles Sousa Vieira
+ * @version 1.0.0
+ */
 
 //import { IExecuteFunctions } from "n8n-core";
 import {
+  IExecuteFunctions,
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
   NodeConnectionType,
   NodeOperationError,
-  IExecuteFunctions,
 } from 'n8n-workflow';
 import oracledb, { Connection } from 'oracledb';
 import { OracleConnectionPool } from './core/connectionPool';
@@ -114,23 +114,29 @@ export class OracleChatMemory implements INodeType {
       const oracleChatMemory = new OracleChatMemory();
 
       switch (operation) {
-        case 'setup':
-          returnData = await oracleChatMemory.setupTable(connection, tableName, this);
-          break;
-        case 'addMessage':
-          returnData = await oracleChatMemory.addMessage(connection, sessionId, tableName, memoryType, this);
-          break;
-        case 'getMessages':
-          returnData = await oracleChatMemory.getMessages(connection, sessionId, tableName, this);
-          break;
-        case 'clearMemory':
-          returnData = await oracleChatMemory.clearMemory(connection, sessionId, tableName, this);
-          break;
-        case 'getSummary':
-          returnData = await oracleChatMemory.getSummary(connection, sessionId, tableName, this);
-          break;
-        default:
-          throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
+      case 'setup':
+        returnData = await oracleChatMemory.setupTable(connection, tableName, this);
+        break;
+      case 'addMessage':
+        returnData = await oracleChatMemory.addMessage(
+          connection,
+          sessionId,
+          tableName,
+          memoryType,
+          this,
+        );
+        break;
+      case 'getMessages':
+        returnData = await oracleChatMemory.getMessages(connection, sessionId, tableName, this);
+        break;
+      case 'clearMemory':
+        returnData = await oracleChatMemory.clearMemory(connection, sessionId, tableName, this);
+        break;
+      case 'getSummary':
+        returnData = await oracleChatMemory.getSummary(connection, sessionId, tableName, this);
+        break;
+      default:
+        throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
       }
     } catch (error) {
       throw new NodeOperationError(this.getNode(), `Chat Memory Error: ${error}`);
@@ -222,16 +228,16 @@ export class OracleChatMemory implements INodeType {
       }
 
       const content =
-        messageData.content != null
-          ? String(messageData.content)
-          : messageData.message != null
-          ? String(messageData.message)
-          : JSON.stringify(messageData);
+				messageData.content != null
+				  ? String(messageData.content)
+				  : messageData.message != null
+				    ? String(messageData.message)
+				    : JSON.stringify(messageData);
 
       const metadataObj =
-        messageData && typeof messageData.metadata === 'object' && messageData.metadata !== null
-          ? messageData.metadata
-          : {};
+				messageData && typeof messageData.metadata === 'object' && messageData.metadata !== null
+				  ? messageData.metadata
+				  : {};
 
       const metadata = JSON.stringify({
         timestamp: new Date().toISOString(),

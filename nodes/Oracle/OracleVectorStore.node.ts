@@ -1,19 +1,19 @@
 /**
-* Oracle Vector Store Node para n8n
-* Gerenciamento de vector store usando Oracle Database 23ai
-*
-* @author Jônatas Meireles Sousa Vieira
-* @version 1.1.0
-*/
+ * Oracle Vector Store Node para n8n
+ * Gerenciamento de vector store usando Oracle Database 23ai
+ *
+ * @author Jônatas Meireles Sousa Vieira
+ * @version 1.1.0
+ */
 
 //import { IExecuteFunctions } from "n8n-core";
 import {
+  IExecuteFunctions,
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
   NodeConnectionType,
   NodeOperationError,
-  IExecuteFunctions,
 } from 'n8n-workflow';
 import oracledb, { Connection } from 'oracledb';
 import { OracleConnectionPool } from './core/connectionPool';
@@ -25,7 +25,8 @@ export class OracleVectorStore implements INodeType {
     icon: 'file:oracle.svg',
     group: ['transform'],
     version: 1,
-    description: 'Gerenciamento de vector store usando Oracle Database 23ai com suporte nativo a vetores',
+    description:
+			'Gerenciamento de vector store usando Oracle Database 23ai com suporte nativo a vetores',
     defaults: {
       name: 'Oracle Vector Store',
     },
@@ -48,37 +49,37 @@ export class OracleVectorStore implements INodeType {
           {
             name: 'Setup Collection',
             value: 'setup',
-            description: 'Criar tabela e índices para armazenamento de vetores'
+            description: 'Criar tabela e índices para armazenamento de vetores',
           },
           {
             name: 'Add Document',
             value: 'addDocument',
-            description: 'Adicionar documento com embedding'
+            description: 'Adicionar documento com embedding',
           },
           {
             name: 'Search Similarity',
             value: 'searchSimilarity',
-            description: 'Buscar documentos similares usando embeddings'
+            description: 'Buscar documentos similares usando embeddings',
           },
           {
             name: 'Delete Document',
             value: 'deleteDocument',
-            description: 'Remover documento por ID'
+            description: 'Remover documento por ID',
           },
           {
             name: 'Update Document',
             value: 'updateDocument',
-            description: 'Atualizar documento existente'
+            description: 'Atualizar documento existente',
           },
           {
             name: 'Get Document',
             value: 'getDocument',
-            description: 'Obter documento por ID'
+            description: 'Obter documento por ID',
           },
           {
             name: 'List Collections',
             value: 'listCollections',
-            description: 'Listar tabelas de vector store'
+            description: 'Listar tabelas de vector store',
           },
         ],
         description: 'Operação a ser executada no vector store',
@@ -191,7 +192,7 @@ export class OracleVectorStore implements INodeType {
     if (!credentials.user || !credentials.password || !credentials.connectionString) {
       throw new NodeOperationError(
         this.getNode(),
-        'Credenciais Oracle incompletas. Verifique user, password e connectionString.'
+        'Credenciais Oracle incompletas. Verifique user, password e connectionString.',
       );
     }
 
@@ -211,29 +212,29 @@ export class OracleVectorStore implements INodeType {
       const oracleVectorStore = new OracleVectorStore();
 
       switch (operation) {
-        case 'setup':
-          returnData = await oracleVectorStore.setupCollection(connection, this);
-          break;
-        case 'addDocument':
-          returnData = await oracleVectorStore.addDocument(connection, this);
-          break;
-        case 'searchSimilarity':
-          returnData = await oracleVectorStore.searchSimilarity(connection, this);
-          break;
-        case 'deleteDocument':
-          returnData = await oracleVectorStore.deleteDocument(connection, this);
-          break;
-        case 'updateDocument':
-          returnData = await oracleVectorStore.updateDocument(connection, this);
-          break;
-        case 'getDocument':
-          returnData = await oracleVectorStore.getDocument(connection, this);
-          break;
-        case 'listCollections':
-          returnData = await oracleVectorStore.listCollections(connection, this);
-          break;
-        default:
-          throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
+      case 'setup':
+        returnData = await oracleVectorStore.setupCollection(connection, this);
+        break;
+      case 'addDocument':
+        returnData = await oracleVectorStore.addDocument(connection, this);
+        break;
+      case 'searchSimilarity':
+        returnData = await oracleVectorStore.searchSimilarity(connection, this);
+        break;
+      case 'deleteDocument':
+        returnData = await oracleVectorStore.deleteDocument(connection, this);
+        break;
+      case 'updateDocument':
+        returnData = await oracleVectorStore.updateDocument(connection, this);
+        break;
+      case 'getDocument':
+        returnData = await oracleVectorStore.getDocument(connection, this);
+        break;
+      case 'listCollections':
+        returnData = await oracleVectorStore.listCollections(connection, this);
+        break;
+      default:
+        throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -253,14 +254,16 @@ export class OracleVectorStore implements INodeType {
 
   private async setupCollection(
     connection: Connection,
-    executeFunctions: IExecuteFunctions
+    executeFunctions: IExecuteFunctions,
   ): Promise<INodeExecutionData[]> {
     const collectionName = executeFunctions.getNodeParameter('collectionName', 0) as string;
     const vectorDimension = executeFunctions.getNodeParameter('vectorDimension', 0) as number;
 
     // Validações
     if (!collectionName.match(/^[a-zA-Z][a-zA-Z0-9_]*$/)) {
-      throw new Error('Nome da coleção deve conter apenas letras, números e underscore, iniciando com letra');
+      throw new Error(
+        'Nome da coleção deve conter apenas letras, números e underscore, iniciando com letra',
+      );
     }
 
     if (vectorDimension <= 0 || vectorDimension > 65536) {
@@ -332,14 +335,14 @@ export class OracleVectorStore implements INodeType {
       ]);
     } catch (error: unknown) {
       throw new Error(
-        `Erro ao configurar coleção: ${error instanceof Error ? error.message : String(error)}`
+        `Erro ao configurar coleção: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
   private async addDocument(
     connection: Connection,
-    executeFunctions: IExecuteFunctions
+    executeFunctions: IExecuteFunctions,
   ): Promise<INodeExecutionData[]> {
     const collectionName = executeFunctions.getNodeParameter('collectionName', 0) as string;
     const inputData = executeFunctions.getInputData();
@@ -362,7 +365,8 @@ export class OracleVectorStore implements INodeType {
       }
 
       try {
-        const documentId = documentData.id != null ? String(documentData.id) : String(Date.now() + i);
+        const documentId =
+					documentData.id != null ? String(documentData.id) : String(Date.now() + i);
         const content = documentData.content != null ? String(documentData.content) : '';
         const embedding = documentData.embedding || documentData.vector;
 
@@ -375,9 +379,10 @@ export class OracleVectorStore implements INodeType {
           throw new Error('Embedding deve conter apenas números válidos');
         }
 
-        const metadataObj = documentData.metadata && typeof documentData.metadata === 'object'
-          ? documentData.metadata
-          : {};
+        const metadataObj =
+					documentData.metadata && typeof documentData.metadata === 'object'
+					  ? documentData.metadata
+					  : {};
 
         const metadata = JSON.stringify({
           timestamp: new Date().toISOString(),
@@ -423,13 +428,23 @@ export class OracleVectorStore implements INodeType {
 
   private async searchSimilarity(
     connection: Connection,
-    executeFunctions: IExecuteFunctions
+    executeFunctions: IExecuteFunctions,
   ): Promise<INodeExecutionData[]> {
     const collectionName = executeFunctions.getNodeParameter('collectionName', 0) as string;
     const searchVectorParam = executeFunctions.getNodeParameter('searchVector', 0) as string;
-    const limit = Math.max(1, Math.min(1000, executeFunctions.getNodeParameter('limit', 0) as number)); // Limit entre 1 e 1000
-    const threshold = Math.max(0, Math.min(1, executeFunctions.getNodeParameter('threshold', 0) as number)); // Threshold entre 0 e 1
-    const distanceMetric = executeFunctions.getNodeParameter('distanceMetric', 0, 'COSINE') as string;
+    const limit = Math.max(
+      1,
+      Math.min(1000, executeFunctions.getNodeParameter('limit', 0) as number),
+    ); // Limit entre 1 e 1000
+    const threshold = Math.max(
+      0,
+      Math.min(1, executeFunctions.getNodeParameter('threshold', 0) as number),
+    ); // Threshold entre 0 e 1
+    const distanceMetric = executeFunctions.getNodeParameter(
+      'distanceMetric',
+      0,
+      'COSINE',
+    ) as string;
 
     let searchVector: number[];
     try {
@@ -472,7 +487,7 @@ export class OracleVectorStore implements INodeType {
         outFormat: oracledb.OUT_FORMAT_OBJECT,
       });
 
-      const documents = (result.rows as any[] || []).map(row => ({
+      const documents = ((result.rows as any[]) || []).map(row => ({
         id: row.ID,
         content: row.CONTENT,
         metadata: row.METADATA ? JSON.parse(row.METADATA) : null,
@@ -485,14 +500,14 @@ export class OracleVectorStore implements INodeType {
       return executeFunctions.helpers.returnJsonArray(documents);
     } catch (error: unknown) {
       throw new Error(
-        `Erro ao buscar similaridade: ${error instanceof Error ? error.message : String(error)}`
+        `Erro ao buscar similaridade: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
   private async deleteDocument(
     connection: Connection,
-    executeFunctions: IExecuteFunctions
+    executeFunctions: IExecuteFunctions,
   ): Promise<INodeExecutionData[]> {
     const collectionName = executeFunctions.getNodeParameter('collectionName', 0) as string;
     const documentId = executeFunctions.getNodeParameter('documentId', 0) as string;
@@ -506,7 +521,7 @@ export class OracleVectorStore implements INodeType {
       const result = await connection.execute(
         deleteSQL,
         { documentId: documentId.trim() },
-        { autoCommit: true }
+        { autoCommit: true },
       );
 
       return executeFunctions.helpers.returnJsonArray([
@@ -515,19 +530,22 @@ export class OracleVectorStore implements INodeType {
           documentId: documentId.trim(),
           rowsDeleted: result.rowsAffected || 0,
           operation: 'deleteDocument',
-          message: result.rowsAffected === 0 ? 'Documento não encontrado' : 'Documento removido com sucesso',
+          message:
+						result.rowsAffected === 0
+						  ? 'Documento não encontrado'
+						  : 'Documento removido com sucesso',
         },
       ]);
     } catch (error: unknown) {
       throw new Error(
-        `Erro ao deletar documento: ${error instanceof Error ? error.message : String(error)}`
+        `Erro ao deletar documento: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
   private async updateDocument(
     connection: Connection,
-    executeFunctions: IExecuteFunctions
+    executeFunctions: IExecuteFunctions,
   ): Promise<INodeExecutionData[]> {
     const collectionName = executeFunctions.getNodeParameter('collectionName', 0) as string;
     const documentId = executeFunctions.getNodeParameter('documentId', 0) as string;
@@ -549,9 +567,8 @@ export class OracleVectorStore implements INodeType {
     try {
       const content = updateData.content != null ? String(updateData.content) : null;
       const embedding = updateData.embedding || updateData.vector;
-      const metadataObj = updateData.metadata && typeof updateData.metadata === 'object'
-        ? updateData.metadata
-        : {};
+      const metadataObj =
+				updateData.metadata && typeof updateData.metadata === 'object' ? updateData.metadata : {};
 
       const metadata = JSON.stringify({
         timestamp: new Date().toISOString(),
@@ -590,19 +607,22 @@ export class OracleVectorStore implements INodeType {
           documentId: documentId.trim(),
           rowsUpdated: result.rowsAffected || 0,
           operation: 'updateDocument',
-          message: result.rowsAffected === 0 ? 'Documento não encontrado' : 'Documento atualizado com sucesso',
+          message:
+						result.rowsAffected === 0
+						  ? 'Documento não encontrado'
+						  : 'Documento atualizado com sucesso',
         },
       ]);
     } catch (error: unknown) {
       throw new Error(
-        `Erro ao atualizar documento: ${error instanceof Error ? error.message : String(error)}`
+        `Erro ao atualizar documento: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
   private async getDocument(
     connection: Connection,
-    executeFunctions: IExecuteFunctions
+    executeFunctions: IExecuteFunctions,
   ): Promise<INodeExecutionData[]> {
     const collectionName = executeFunctions.getNodeParameter('collectionName', 0) as string;
     const documentId = executeFunctions.getNodeParameter('documentId', 0) as string;
@@ -621,7 +641,7 @@ export class OracleVectorStore implements INodeType {
       const result = await connection.execute(
         selectSQL,
         { documentId: documentId.trim() },
-        { outFormat: oracledb.OUT_FORMAT_OBJECT }
+        { outFormat: oracledb.OUT_FORMAT_OBJECT },
       );
 
       if (!result.rows || result.rows.length === 0) {
@@ -648,14 +668,14 @@ export class OracleVectorStore implements INodeType {
       return executeFunctions.helpers.returnJsonArray([document]);
     } catch (error: unknown) {
       throw new Error(
-        `Erro ao obter documento: ${error instanceof Error ? error.message : String(error)}`
+        `Erro ao obter documento: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
   private async listCollections(
     connection: Connection,
-    executeFunctions: IExecuteFunctions
+    executeFunctions: IExecuteFunctions,
   ): Promise<INodeExecutionData[]> {
     try {
       const listSQL = `
@@ -678,11 +698,15 @@ export class OracleVectorStore implements INodeType {
         ORDER BY t.table_name
       `;
 
-      const result = await connection.execute(listSQL, {}, {
-        outFormat: oracledb.OUT_FORMAT_OBJECT,
-      });
+      const result = await connection.execute(
+        listSQL,
+        {},
+        {
+          outFormat: oracledb.OUT_FORMAT_OBJECT,
+        },
+      );
 
-      const collections = (result.rows as any[] || []).map(row => ({
+      const collections = ((result.rows as any[]) || []).map(row => ({
         collectionName: row.TABLE_NAME,
         created: row.CREATED,
         vectorColumn: row.COLUMN_NAME,
@@ -694,7 +718,7 @@ export class OracleVectorStore implements INodeType {
       return executeFunctions.helpers.returnJsonArray(collections);
     } catch (error: unknown) {
       throw new Error(
-        `Erro ao listar coleções: ${error instanceof Error ? error.message : String(error)}`
+        `Erro ao listar coleções: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }

@@ -2,7 +2,7 @@
 
 const globals = require('globals');
 
-export default [
+module.exports = [
   // Objeto separado APENAS para ignores
   {
     ignores: [
@@ -13,6 +13,7 @@ export default [
       '**/*.spec.ts',
       '**/*.d.ts',
       '.tsbuildinfo',
+      'script',
     ],
   },
   // Configuração principal para arquivos TypeScript
@@ -35,31 +36,21 @@ export default [
       '@typescript-eslint': require('@typescript-eslint/eslint-plugin'),
     },
     rules: {
-      // Regras básicas de estilo
-      indent: ['error', 2], // 2 espaços para indentação
+      indent: ['error', 2],
       quotes: ['error', 'single'],
       semi: ['error', 'always'],
       'no-console': 'off',
       'prefer-const': 'error',
-			
-      // Desabilitar regras JS em favor das TypeScript equivalentes
       'no-unused-vars': 'off',
-      'no-undef': 'off', // TypeScript já faz essa verificação
-			
-      // Regras TypeScript específicas
+      'no-undef': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-        },
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-inferrable-types': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-			
-      // Regras específicas para n8n nodes
       '@typescript-eslint/no-non-null-assertion': 'warn',
       '@typescript-eslint/prefer-nullish-coalescing': 'warn',
       '@typescript-eslint/prefer-optional-chain': 'warn',
@@ -77,7 +68,7 @@ export default [
       },
     },
     rules: {
-      indent: ['error', 2], // 2 espaços para JS também
+      indent: ['error', 2],
       quotes: ['error', 'single'],
       semi: ['error', 'always'],
       'no-unused-vars': 'warn',
