@@ -1,13 +1,12 @@
 /**
- * Oracle Vector Store Node para n8n
- * Gerenciamento de vector store usando Oracle Database 23ai
- *
- * @author Jônatas Meireles Sousa Vieira
- * @version 1.1.0
- */
+* Oracle Database Node para n8n
+* Suporte para upsert, get, add e update de dados em Oracle database
+*
+* @author Jônatas Meireles Sousa Vieira
+* @version 1.1.0
+*/
 
 //import { IExecuteFunctions } from "n8n-core";
-
 import {
   IDataObject,
   INodeExecutionData,
@@ -16,8 +15,9 @@ import {
   NodeOperationError,
   IExecuteFunctions,
 } from 'n8n-workflow';
-import oracledb from 'oracledb';
+import oracledb, { thin } from 'oracledb';
 import { OracleConnection } from './core/connection';
+import { isThinModeCredentials } from './core/types/oracle.credentials.type';
 
 export class OracleDatabase implements INodeType {
   description: INodeTypeDescription = {
@@ -92,7 +92,7 @@ export class OracleDatabase implements INodeType {
                 options: [
                   { name: 'String', value: 'string' },
                   { name: 'Number', value: 'number' }
-                ]
+                ],
               },
               {
                 displayName: 'Parse for IN statement',
@@ -104,8 +104,8 @@ export class OracleDatabase implements INodeType {
                 options: [
                   { name: 'No', value: false },
                   { name: 'Yes', value: true }
-                ]
-              }
+                ],
+              },
             ],
           },
         ],
@@ -113,34 +113,19 @@ export class OracleDatabase implements INodeType {
     ],
   };
 
-  
-
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-    if (typeof String.prototype.replaceAll === 'undefined') {
-      (String.prototype as any).replaceAll = function (match: string | RegExp, replace: string): string {
-        if (match instanceof RegExp) {
-          // Se já tem flag global, usa como está; senão, adiciona 'g'
-          const globalRegex = match.global ? match : new RegExp(match.source, match.flags + 'g');
-          return this.replace(globalRegex, replace);
-        }
-        // Para strings, split/join é mais eficiente
-        return this.split(match).join(replace);
-      };
-    }
 
     const credentials = await this.getCredentials('oracleCredentials');
     const oracleCredentials = {
       user: String(credentials.user),
       password: String(credentials.password),
       connectionString: String(credentials.connectionString),
+      thinMode: Boolean(credentials.thinMode),
     };
 
-    const db = new OracleConnection(
-      oracleCredentials,
-      Boolean(credentials.thinMode)
-    );
-    const connection = await db.getConnection();
+    const db = new OracleConnection(oracleCredentials);
 
+    const connection = await db.getConnection();
     let returnItems = [];
 
     try {
@@ -149,10 +134,9 @@ export class OracleDatabase implements INodeType {
 
       //get list of param objects entered by user:
       const parameterIDataObjectList = ((this.getNodeParameter('params', 0, {}) as IDataObject).values as { name: string, value: string | number, datatype: string, parseInStatement: boolean }[]) || [];
-      
+
       //convert parameterIDataObjectList to map of BindParameters that OracleDB wants
       const bindParameters: { [key: string]: oracledb.BindParameter } = parameterIDataObjectList.reduce((result: { [key: string]: oracledb.BindParameter }, item) => {
-
         //set data type to be correct type
         let datatype: oracledb.DbType | undefined = undefined;
         if (item.datatype && item.datatype === 'number') {
@@ -167,10 +151,10 @@ export class OracleDatabase implements INodeType {
           return result;
         } else {
           //in this else block, we make it possible to use a parameter for an IN statement
-
           const valList = item.value.toString().split(',');
           let generatedSqlString = '(';
           const crypto = require('crypto');
+
           for (let i = 0; i < valList.length; i++) {
             //generate unique parameter names for each item in list
             const uniqueId: String = crypto.randomUUID().replaceAll('-', '_'); //dashes don't work in parameter names.
@@ -187,15 +171,14 @@ export class OracleDatabase implements INodeType {
 
           //replace all occurrences of original parameter name with new generated sql
           query = query.replaceAll(':' + item.name, generatedSqlString);
-
           return result;
         }
       }, {});
 
       //execute query
       const result = await connection.execute(
-        query, 
-        bindParameters, 
+        query,
+        bindParameters,
         {
           outFormat: oracledb.OUT_FORMAT_OBJECT,
           autoCommit: true,
@@ -205,9 +188,8 @@ export class OracleDatabase implements INodeType {
       returnItems = this.helpers.returnJsonArray(
         result as unknown as IDataObject[]
       );
-
     } catch (error) {
-      throw new NodeOperationError(this.getNode(), error.message);
+      throw new NodeOperationError(this.getNode(), (error as Error).message);
     } finally {
       if (connection) {
         try {
@@ -222,22 +204,4 @@ export class OracleDatabase implements INodeType {
 
     return this.prepareOutputData(returnItems);
   }
-}
-
-declare global {
-  interface String {
-    replaceAll(match: string | RegExp, replace: string): string;
-  }
-}
-
-if (typeof String.prototype.replaceAll === 'undefined') {
-  (String.prototype as any).replaceAll = function (match: string | RegExp, replace: string): string {
-    if (match instanceof RegExp) {
-      if (!match.global) {
-        match = new RegExp(match.source, match.flags + 'g');
-      }
-      return this.replace(match, replace);
-    }
-    return this.split(match).join(replace);
-  };
 }

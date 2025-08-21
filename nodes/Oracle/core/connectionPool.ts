@@ -8,7 +8,7 @@
 
 import oracledb from 'oracledb';
 
-import { OracleCredentials } from '../types/oracle.credentials.type';
+import { OracleCredentials } from './types/oracle.credentials.type';
 
 // Definição de tipo mais robusta para o Pool
 type Pool = oracledb.Pool;

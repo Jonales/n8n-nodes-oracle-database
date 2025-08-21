@@ -1,13 +1,12 @@
 /**
- * Oracle Vector Store Node para n8n
- * Gerenciamento de vector store usando Oracle Database 23ai
- *
- * @author Jônatas Meireles Sousa Vieira
- * @version 1.1.0
- */
+* Oracle Vector Store Node para n8n
+* Gerenciamento de vector store usando Oracle Database 23ai
+*
+* @author Jônatas Meireles Sousa Vieira
+* @version 1.1.0
+*/
 
 //import { IExecuteFunctions } from "n8n-core";
-
 import {
   INodeExecutionData,
   INodeType,
@@ -46,45 +45,44 @@ export class OracleVectorStore implements INodeType {
         noDataExpression: true,
         default: 'addDocument',
         options: [
-          { 
-            name: 'Setup Collection', 
+          {
+            name: 'Setup Collection',
             value: 'setup',
             description: 'Criar tabela e índices para armazenamento de vetores'
           },
-          { 
-            name: 'Add Document', 
+          {
+            name: 'Add Document',
             value: 'addDocument',
             description: 'Adicionar documento com embedding'
           },
-          { 
-            name: 'Search Similarity', 
+          {
+            name: 'Search Similarity',
             value: 'searchSimilarity',
             description: 'Buscar documentos similares usando embeddings'
           },
-          { 
-            name: 'Delete Document', 
+          {
+            name: 'Delete Document',
             value: 'deleteDocument',
             description: 'Remover documento por ID'
           },
-          { 
-            name: 'Update Document', 
+          {
+            name: 'Update Document',
             value: 'updateDocument',
             description: 'Atualizar documento existente'
           },
-          { 
-            name: 'Get Document', 
+          {
+            name: 'Get Document',
             value: 'getDocument',
             description: 'Obter documento por ID'
           },
-          { 
-            name: 'List Collections', 
+          {
+            name: 'List Collections',
             value: 'listCollections',
             description: 'Listar tabelas de vector store'
           },
         ],
         description: 'Operação a ser executada no vector store',
       },
-      
       // Collection Name
       {
         displayName: 'Collection Name',
@@ -99,7 +97,6 @@ export class OracleVectorStore implements INodeType {
           },
         },
       },
-      
       // Setup Operation Fields
       {
         displayName: 'Vector Dimension',
@@ -114,7 +111,6 @@ export class OracleVectorStore implements INodeType {
           },
         },
       },
-      
       // Document Operations Fields
       {
         displayName: 'Document ID',
@@ -129,7 +125,6 @@ export class OracleVectorStore implements INodeType {
           },
         },
       },
-      
       // Search Fields
       {
         displayName: 'Search Vector',
@@ -191,7 +186,7 @@ export class OracleVectorStore implements INodeType {
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const credentials = await this.getCredentials('oracleCredentials');
     const operation = this.getNodeParameter('operation', 0) as string;
-    
+
     // Validar credenciais
     if (!credentials.user || !credentials.password || !credentials.connectionString) {
       throw new NodeOperationError(
@@ -213,33 +208,32 @@ export class OracleVectorStore implements INodeType {
       const pool = await OracleConnectionPool.getPool(oracleCredentials);
       connection = await pool.getConnection();
 
-      // Criar uma instância da classe para acessar os métodos privados
-      const vectorStore = new OracleVectorStore();
+      const oracleVectorStore = new OracleVectorStore();
 
       switch (operation) {
-      case 'setup':
-        returnData = await vectorStore.setupCollection(connection, this);
-        break;
-      case 'addDocument':
-        returnData = await vectorStore.addDocument(connection, this);
-        break;
-      case 'searchSimilarity':
-        returnData = await vectorStore.searchSimilarity(connection, this);
-        break;
-      case 'deleteDocument':
-        returnData = await vectorStore.deleteDocument(connection, this);
-        break;
-      case 'updateDocument':
-        returnData = await vectorStore.updateDocument(connection, this);
-        break;
-      case 'getDocument':
-        returnData = await vectorStore.getDocument(connection, this);
-        break;
-      case 'listCollections':
-        returnData = await vectorStore.listCollections(connection, this);
-        break;
-      default:
-        throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
+        case 'setup':
+          returnData = await oracleVectorStore.setupCollection(connection, this);
+          break;
+        case 'addDocument':
+          returnData = await oracleVectorStore.addDocument(connection, this);
+          break;
+        case 'searchSimilarity':
+          returnData = await oracleVectorStore.searchSimilarity(connection, this);
+          break;
+        case 'deleteDocument':
+          returnData = await oracleVectorStore.deleteDocument(connection, this);
+          break;
+        case 'updateDocument':
+          returnData = await oracleVectorStore.updateDocument(connection, this);
+          break;
+        case 'getDocument':
+          returnData = await oracleVectorStore.getDocument(connection, this);
+          break;
+        case 'listCollections':
+          returnData = await oracleVectorStore.listCollections(connection, this);
+          break;
+        default:
+          throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -268,7 +262,7 @@ export class OracleVectorStore implements INodeType {
     if (!collectionName.match(/^[a-zA-Z][a-zA-Z0-9_]*$/)) {
       throw new Error('Nome da coleção deve conter apenas letras, números e underscore, iniciando com letra');
     }
-    
+
     if (vectorDimension <= 0 || vectorDimension > 65536) {
       throw new Error('Dimensão do vetor deve estar entre 1 e 65536');
     }
@@ -280,7 +274,6 @@ export class OracleVectorStore implements INodeType {
           table_exists NUMBER;
         BEGIN
           SELECT COUNT(*) INTO table_exists FROM user_tables WHERE table_name = UPPER('${collectionName}');
-          
           IF table_exists = 0 THEN
             EXECUTE IMMEDIATE '
               CREATE TABLE ${collectionName} (
@@ -306,16 +299,15 @@ export class OracleVectorStore implements INodeType {
         DECLARE
           index_exists NUMBER;
         BEGIN
-          SELECT COUNT(*) INTO index_exists 
-          FROM user_indexes 
+          SELECT COUNT(*) INTO index_exists
+          FROM user_indexes
           WHERE index_name = UPPER('idx_${collectionName}_embedding');
-          
           IF index_exists = 0 THEN
             EXECUTE IMMEDIATE '
-              CREATE VECTOR INDEX idx_${collectionName}_embedding 
-              ON ${collectionName}(embedding) 
-              ORGANIZATION NEIGHBOR PARTITIONS 
-              DISTANCE COSINE 
+              CREATE VECTOR INDEX idx_${collectionName}_embedding
+              ON ${collectionName}(embedding)
+              ORGANIZATION NEIGHBOR PARTITIONS
+              DISTANCE COSINE
               WITH TARGET ACCURACY 95
             ';
             DBMS_OUTPUT.PUT_LINE('Índice vetorial criado com sucesso');
@@ -351,13 +343,12 @@ export class OracleVectorStore implements INodeType {
   ): Promise<INodeExecutionData[]> {
     const collectionName = executeFunctions.getNodeParameter('collectionName', 0) as string;
     const inputData = executeFunctions.getInputData();
-    
+
     if (!inputData || inputData.length === 0) {
       throw new Error('Nenhum dado de entrada fornecido');
     }
 
     const results: any[] = [];
-
     for (let i = 0; i < inputData.length; i++) {
       const documentData = inputData[i]?.json;
 
@@ -384,8 +375,8 @@ export class OracleVectorStore implements INodeType {
           throw new Error('Embedding deve conter apenas números válidos');
         }
 
-        const metadataObj = documentData.metadata && typeof documentData.metadata === 'object' 
-          ? documentData.metadata 
+        const metadataObj = documentData.metadata && typeof documentData.metadata === 'object'
+          ? documentData.metadata
           : {};
 
         const metadata = JSON.stringify({
@@ -457,7 +448,7 @@ export class OracleVectorStore implements INodeType {
 
     try {
       const searchSQL = `
-        SELECT 
+        SELECT
           id,
           content,
           metadata,
@@ -465,7 +456,7 @@ export class OracleVectorStore implements INodeType {
           updated_at,
           VECTOR_DISTANCE(embedding, :searchVector, ${distanceMetric}) as distance,
           (1 - VECTOR_DISTANCE(embedding, :searchVector, ${distanceMetric})) as similarity
-        FROM ${collectionName} 
+        FROM ${collectionName}
         WHERE (1 - VECTOR_DISTANCE(embedding, :searchVector, ${distanceMetric})) >= :threshold
         ORDER BY similarity DESC
         FETCH FIRST :limit ROWS ONLY
@@ -558,9 +549,8 @@ export class OracleVectorStore implements INodeType {
     try {
       const content = updateData.content != null ? String(updateData.content) : null;
       const embedding = updateData.embedding || updateData.vector;
-
-      const metadataObj = updateData.metadata && typeof updateData.metadata === 'object' 
-        ? updateData.metadata 
+      const metadataObj = updateData.metadata && typeof updateData.metadata === 'object'
+        ? updateData.metadata
         : {};
 
       const metadata = JSON.stringify({
@@ -583,6 +573,7 @@ export class OracleVectorStore implements INodeType {
         if (embedding.some(val => typeof val !== 'number' || isNaN(val))) {
           throw new Error('Embedding deve conter apenas números válidos');
         }
+
         updateSQL += ', embedding = :embedding';
         bindParams.embedding = { type: oracledb.DB_TYPE_VECTOR, val: embedding };
       }
@@ -623,7 +614,7 @@ export class OracleVectorStore implements INodeType {
     try {
       const selectSQL = `
         SELECT id, content, embedding, metadata, created_at, updated_at
-        FROM ${collectionName} 
+        FROM ${collectionName}
         WHERE id = :documentId
       `;
 
@@ -668,20 +659,20 @@ export class OracleVectorStore implements INodeType {
   ): Promise<INodeExecutionData[]> {
     try {
       const listSQL = `
-        SELECT 
+        SELECT
           t.table_name,
           t.created,
           c.column_name,
           c.data_type,
-          CASE 
+          CASE
             WHEN c.data_type LIKE 'VECTOR%' THEN 'true'
             ELSE 'false'
           END as has_vector_column
         FROM user_tables t
         LEFT JOIN user_tab_columns c ON t.table_name = c.table_name AND c.data_type LIKE 'VECTOR%'
         WHERE EXISTS (
-          SELECT 1 FROM user_tab_columns tc 
-          WHERE tc.table_name = t.table_name 
+          SELECT 1 FROM user_tab_columns tc
+          WHERE tc.table_name = t.table_name
           AND tc.data_type LIKE 'VECTOR%'
         )
         ORDER BY t.table_name

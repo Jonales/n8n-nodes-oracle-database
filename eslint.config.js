@@ -2,7 +2,7 @@
 
 const globals = require('globals');
 
-module.exports = [
+export default [
   // Objeto separado APENAS para ignores
   {
     ignores: [

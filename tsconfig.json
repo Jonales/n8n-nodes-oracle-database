@@ -3,10 +3,11 @@
 		"lib": [
 			"es2017",
 			"es2019",
-			"es2021"
+			"es2021",
+			"dom"
 		],
 		"types": [
-			"node",
+			"node"
 		],
 		"module": "commonjs",
 		"noImplicitAny": true,
@@ -21,11 +22,19 @@
 		"sourceMap": true,
 		"esModuleInterop": true,
 		"useUnknownInCatchVariables": false,
+		"skipLibCheck": true,
+		"allowSyntheticDefaultImports": true
 	},
 	"include": [
 		"credentials/**/*",
 		"nodes/**/*",
 		"nodes/**/*.json",
-		"package.json",
+		"package.json"
 	],
+	"exclude": [
+		"node_modules",
+		"dist",
+		"**/*.test.ts",
+		"**/*.spec.ts"
+	]
 }

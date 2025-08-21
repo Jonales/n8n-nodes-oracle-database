@@ -26,8 +26,8 @@ import { PLSQLExecutorFactory } from './core/plsqlExecutor';
 import { TransactionManagerFactory } from './core/transactionManager';
 
 
-import { OracleConnection, ConnectionConfig } from './connection';
-import { OracleCredentials } from './types/oracle.credentials.type';
+import { OracleConnection, ConnectionConfig } from './core/connection';
+import { OracleCredentials } from './core/types/oracle.credentials.type';
 
 /**
  * Interface para parâmetros dos nodes

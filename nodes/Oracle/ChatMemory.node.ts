@@ -1,12 +1,12 @@
 /**
- * Tipos de credenciais Oracle para n8n-nodes
- * Suporte para modo thin (padrão) e thick com Oracle Client
- *
- * @author Jônatas Meireles Sousa Vieira
- * @version 1.0.0
- */
-//import { IExecuteFunctions } from "n8n-core";
+* Tipos de credenciais Oracle para n8n-nodes
+* Suporte para modo thin (padrão) e thick com Oracle Client
+*
+* @author Jônatas Meireles Sousa Vieira
+* @version 1.0.0
+*/
 
+//import { IExecuteFunctions } from "n8n-core";
 import {
   INodeExecutionData,
   INodeType,
@@ -111,32 +111,26 @@ export class OracleChatMemory implements INodeType {
       const pool = await OracleConnectionPool.getPool(oracleCredentials);
       connection = await pool.getConnection();
 
-      const chatMemoryInstance = new OracleChatMemory();
+      const oracleChatMemory = new OracleChatMemory();
 
       switch (operation) {
-      case 'setup':
-        returnData = await chatMemoryInstance.setupTable(connection, tableName, this);
-        break;
-      case 'addMessage':
-        returnData = await chatMemoryInstance.addMessage(
-          connection,
-          sessionId,
-          tableName,
-          memoryType,
-          this,
-        );
-        break;
-      case 'getMessages':
-        returnData = await chatMemoryInstance.getMessages(connection, sessionId, tableName, this);
-        break;
-      case 'clearMemory':
-        returnData = await chatMemoryInstance.clearMemory(connection, sessionId, tableName, this);
-        break;
-      case 'getSummary':
-        returnData = await chatMemoryInstance.getSummary(connection, sessionId, tableName, this);
-        break;
-      default:
-        throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
+        case 'setup':
+          returnData = await oracleChatMemory.setupTable(connection, tableName, this);
+          break;
+        case 'addMessage':
+          returnData = await oracleChatMemory.addMessage(connection, sessionId, tableName, memoryType, this);
+          break;
+        case 'getMessages':
+          returnData = await oracleChatMemory.getMessages(connection, sessionId, tableName, this);
+          break;
+        case 'clearMemory':
+          returnData = await oracleChatMemory.clearMemory(connection, sessionId, tableName, this);
+          break;
+        case 'getSummary':
+          returnData = await oracleChatMemory.getSummary(connection, sessionId, tableName, this);
+          break;
+        default:
+          throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
       }
     } catch (error) {
       throw new NodeOperationError(this.getNode(), `Chat Memory Error: ${error}`);
@@ -180,7 +174,7 @@ export class OracleChatMemory implements INodeType {
         END;
       `;
 
-      const result = await connection.execute(createTableSQL);
+      await connection.execute(createTableSQL);
 
       // Criar índices para performance
       const createIndexSQL = `
@@ -228,16 +222,16 @@ export class OracleChatMemory implements INodeType {
       }
 
       const content =
-				messageData.content != null
-				  ? String(messageData.content)
-				  : messageData.message != null
-				    ? String(messageData.message)
-				    : JSON.stringify(messageData);
+        messageData.content != null
+          ? String(messageData.content)
+          : messageData.message != null
+          ? String(messageData.message)
+          : JSON.stringify(messageData);
 
       const metadataObj =
-				messageData && typeof messageData.metadata === 'object' && messageData.metadata !== null
-				  ? messageData.metadata
-				  : {};
+        messageData && typeof messageData.metadata === 'object' && messageData.metadata !== null
+          ? messageData.metadata
+          : {};
 
       const metadata = JSON.stringify({
         timestamp: new Date().toISOString(),
@@ -286,15 +280,15 @@ export class OracleChatMemory implements INodeType {
   ): Promise<INodeExecutionData[]> {
     try {
       const selectSQL = `
-        SELECT 
+        SELECT
           id,
           session_id,
           message_type,
           content,
           timestamp_created,
           metadata
-        FROM ${tableName} 
-        WHERE session_id = :sessionId 
+        FROM ${tableName}
+        WHERE session_id = :sessionId
         ORDER BY timestamp_created ASC
       `;
 
@@ -363,14 +357,14 @@ export class OracleChatMemory implements INodeType {
   ): Promise<INodeExecutionData[]> {
     try {
       const summarySQL = `
-        SELECT 
+        SELECT
           COUNT(*) as total_messages,
           COUNT(CASE WHEN message_type = 'user' THEN 1 END) as user_messages,
           COUNT(CASE WHEN message_type = 'assistant' THEN 1 END) as assistant_messages,
           COUNT(CASE WHEN message_type = 'system' THEN 1 END) as system_messages,
           MIN(timestamp_created) as first_message,
           MAX(timestamp_created) as last_message
-        FROM ${tableName} 
+        FROM ${tableName}
         WHERE session_id = :sessionId
       `;
 
