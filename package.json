@@ -33,6 +33,7 @@
 	],
 	"packageManager": "npm@10.9.2",
 	"scripts": {
+		"preinstall": "npx only-allow npm",
 		"clean": "npx rimraf dist tsconfig.tsbuildinfo",
 		"prebuild": "npm run clean",
 		"build": "tsc -p tsconfig.json && gulp build:icons",
