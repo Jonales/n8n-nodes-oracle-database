@@ -55,26 +55,39 @@ n8n-nodes-oracle-database/
 │
 ├── 📂 nodes/
 │   └── 📂 Oracle/
-│       ├── connection.ts               \# Gerenciador de conexão (thin/thick)
-│       ├── OracleDatabase.node.ts      \# Node básico com parametrização
-│       ├── OracleDatabaseAdvanced.node.ts \# Node avançado empresarial
+│       ├── connection.ts                   \# Gerenciador de conexão (thin/thick)
+│       ├── OracleDatabase.node.ts          \# Node básico com parametrização
+│       ├── OracleDatabaseAdvanced.node.ts  \# Node avançado empresarial
+│       ├── OracleVectorStore.node.ts       \# Node para criação de vector store
+│       ├── ChatMemory.node.ts              \# Node para armazenamento de historico de chat
+│       ├── oracle.svg                      \# Simbolo da Oracle para os nodes
 │       │
-│       ├── 📂 interfaces/
-│       │   └── database.interface.ts   \# Interfaces para conexões
-│       │
-│       ├── 📂 types/
-│       │   └── oracle.credentials.type.ts \# Tipos para credenciais
-│       │
-│       └── 📂 core/                    \# Operações avançadas
-│           ├── aqOperations.ts         \# Oracle Advanced Queuing
-│           ├── bulkOperations.ts       \# Operações em massa
-│           ├── connectionPool.ts       \# Pool de conexões
-│           ├── plsqlExecutor.ts        \# Executor PL/SQL
-│           └── transactionManager.ts   \# Gerenciador transações
+│       └── 📂 core/
+│            └── 📂 interfaces/
+│            │   └── database.interface.ts   \# Interfaces para conexões
+│            │
+│            ├── 📂 types/
+│            │   └── oracle.credentials.type.ts \# Tipos para credenciais
+│            │
+│            ├── 📂 utils/
+│            │   └── error-handler.ts \# Tipos para erros
+│            │
+│            ├── aqOperations.ts         \# Oracle Advanced Queuing
+│            ├── bulkOperations.ts       \# Operações em massa
+│            ├── connectionPool.ts       \# Pool de conexões
+│            ├── connections.ts          \# Gerenciador de conexão
+│            ├── plsqlExecutor.ts        \# Executor PL/SQL
+│            └── transactionManager.ts   \# Gerenciador transações
 │
 ├── 📂 dist/                            \# Build compilado (auto-gerado)
 ├── 📂 image/README/                    \# Imagens do README
 ├── 📂 node_modules/                    \# Dependências (auto-gerado)
+├── 📂 script/                          \# Script para validação de instalação do oracle cli
+├── 📂 imagem/                          \# Diretorio de imagens
+│    └── 📂 README                      \# Imagens do projeto
+├── 📂 lib/                             \# Pasta para as bibliotecas
+│    └── 📂 oracle_cliente              \# Pasta para instalação do oracle cliente automatica
+│
 │
 ├── 📄 package.json                     \# Configuração do projeto
 ├── 📄 tsconfig.json                    \# Configuração TypeScript
@@ -82,6 +95,10 @@ n8n-nodes-oracle-database/
 ├── 📄 gulpfile.js                      \# Tasks de build
 ├── 📄 LICENSE.md                       \# Licença MIT
 └── 📄 README.md                        \# Esta documentação
+└── 📄 prettier.config.cjs              \# Esta documentação  
+└── 📄 gulpfile.js                      \# 
+└── 📄 index.js                         \# 
+
 
 ```
 
