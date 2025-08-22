@@ -1,23 +1,33 @@
 {
-	"compilerOptions": {
-		"lib": ["es2017", "es2019", "es2021", "dom"],
-		"types": ["node"],
-		"module": "commonjs",
-		"noImplicitAny": true,
-		"removeComments": true,
-		"strictNullChecks": true,
-		"strict": true,
-		"preserveConstEnums": true,
-		"resolveJsonModule": true,
-		"declaration": true,
-		"outDir": "./dist/",
-		"target": "es2021",
-		"sourceMap": true,
-		"esModuleInterop": true,
-		"useUnknownInCatchVariables": false,
-		"skipLibCheck": true,
-		"allowSyntheticDefaultImports": true
-	},
-	"include": ["credentials/**/*", "nodes/**/*", "nodes/**/*.json", "package.json"],
-	"exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+  "compilerOptions": {
+    "lib": ["es2017", "es2019", "es2021", "dom"],
+    "types": ["node"],
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "strictNullChecks": true,
+    "strict": true,
+    "preserveConstEnums": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "outDir": "./dist/",
+    "target": "es2021",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "useUnknownInCatchVariables": false,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "credentials/**/*", 
+    "nodes/**/*", 
+    "package.json"
+  ],
+  "exclude": [
+    "node_modules", 
+    "dist", 
+    "**/*.test.ts", 
+    "**/*.spec.ts",
+    "script/**/*"
+  ]
 }
