@@ -10,10 +10,15 @@ import oracledb, { Connection } from 'oracledb';
 import { OracleConnectionPool } from './core/connectionPool';
 
 class OracleChatMemoryOperations {
+  private executeFunctions: IExecuteFunctions;
+
+  constructor(executeFunctions: IExecuteFunctions) {
+    this.executeFunctions = executeFunctions;
+  }
+
   async setupTable(
     connection: Connection,
     tableName: string,
-    executeFunctions: IExecuteFunctions,
   ): Promise<INodeExecutionData[]> {
     try {
       const createTableSQL = `
@@ -26,7 +31,7 @@ class OracleChatMemoryOperations {
               content CLOB NOT NULL,
               timestamp_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               metadata CLOB,
-              CONSTRAINT chk_message_type CHECK (message_type IN (\'user\', \'assistant\', \'system\'))
+              CONSTRAINT chk_message_type CHECK (message_type IN ('user', 'assistant', 'system'))
             )
           ';
           DBMS_OUTPUT.PUT_LINE('Tabela ${tableName} criada com sucesso');
@@ -56,7 +61,7 @@ class OracleChatMemoryOperations {
       await connection.execute(createIndexSQL);
       await connection.commit();
 
-      return executeFunctions.helpers.returnJsonArray([
+      return this.executeFunctions.helpers.returnJsonArray([
         {
           success: true,
           message: `Tabela ${tableName} configurada com sucesso`,
@@ -75,10 +80,9 @@ class OracleChatMemoryOperations {
     sessionId: string,
     tableName: string,
     memoryType: string,
-    executeFunctions: IExecuteFunctions,
   ): Promise<INodeExecutionData[]> {
     try {
-      const inputData = executeFunctions.getInputData();
+      const inputData = this.executeFunctions.getInputData();
       const messageData = inputData[0]?.json;
 
       if (!messageData) {
@@ -99,7 +103,7 @@ class OracleChatMemoryOperations {
 
       const metadata = JSON.stringify({
         timestamp: new Date().toISOString(),
-        nodeId: executeFunctions.getNode().id,
+        nodeId: this.executeFunctions.getNode().id,
         ...metadataObj,
       });
 
@@ -119,7 +123,7 @@ class OracleChatMemoryOperations {
         { autoCommit: true },
       );
 
-      return executeFunctions.helpers.returnJsonArray([
+      return this.executeFunctions.helpers.returnJsonArray([
         {
           success: true,
           sessionId,
@@ -140,7 +144,6 @@ class OracleChatMemoryOperations {
     connection: Connection,
     sessionId: string,
     tableName: string,
-    executeFunctions: IExecuteFunctions,
   ): Promise<INodeExecutionData[]> {
     try {
       const selectSQL = `
@@ -173,7 +176,7 @@ class OracleChatMemoryOperations {
         metadata: row.METADATA ? JSON.parse(row.METADATA) : null,
       }));
 
-      return executeFunctions.helpers.returnJsonArray(messages);
+      return this.executeFunctions.helpers.returnJsonArray(messages);
     } catch (error: unknown) {
       throw new Error(
         `Erro ao recuperar mensagens: ${error instanceof Error ? error.message : String(error)}`,
@@ -185,7 +188,6 @@ class OracleChatMemoryOperations {
     connection: Connection,
     sessionId: string,
     tableName: string,
-    executeFunctions: IExecuteFunctions,
   ): Promise<INodeExecutionData[]> {
     try {
       const deleteSQL = `DELETE FROM ${tableName} WHERE session_id = :sessionId`;
@@ -198,7 +200,7 @@ class OracleChatMemoryOperations {
         },
       );
 
-      return executeFunctions.helpers.returnJsonArray([
+      return this.executeFunctions.helpers.returnJsonArray([
         {
           success: true,
           sessionId,
@@ -217,7 +219,6 @@ class OracleChatMemoryOperations {
     connection: Connection,
     sessionId: string,
     tableName: string,
-    executeFunctions: IExecuteFunctions,
   ): Promise<INodeExecutionData[]> {
     try {
       const summarySQL = `
@@ -242,7 +243,7 @@ class OracleChatMemoryOperations {
 
       const summary = result.rows?.[0] as any;
 
-      return executeFunctions.helpers.returnJsonArray([
+      return this.executeFunctions.helpers.returnJsonArray([
         {
           sessionId,
           totalMessages: summary?.TOTAL_MESSAGES || 0,
@@ -350,36 +351,35 @@ export class OracleChatMemory implements INodeType {
 
     let connection: Connection | undefined;
     let returnData: INodeExecutionData[] = [];
-    const chatMemoryOps = new OracleChatMemoryOperations();
+    const chatMemoryOps = new OracleChatMemoryOperations(this);
 
     try {
       const pool = await OracleConnectionPool.getPool(oracleCredentials);
       connection = await pool.getConnection();
 
       switch (operation) {
-      case 'setup':
-        returnData = await chatMemoryOps.setupTable(connection, tableName, this);
-        break;
-      case 'addMessage':
-        returnData = await chatMemoryOps.addMessage(
-          connection,
-          sessionId,
-          tableName,
-          memoryType,
-          this,
-        );
-        break;
-      case 'getMessages':
-        returnData = await chatMemoryOps.getMessages(connection, sessionId, tableName, this);
-        break;
-      case 'clearMemory':
-        returnData = await chatMemoryOps.clearMemory(connection, sessionId, tableName, this);
-        break;
-      case 'getSummary':
-        returnData = await chatMemoryOps.getSummary(connection, sessionId, tableName, this);
-        break;
-      default:
-        throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
+        case 'setup':
+          returnData = await chatMemoryOps.setupTable(connection, tableName);
+          break;
+        case 'addMessage':
+          returnData = await chatMemoryOps.addMessage(
+            connection,
+            sessionId,
+            tableName,
+            memoryType,
+          );
+          break;
+        case 'getMessages':
+          returnData = await chatMemoryOps.getMessages(connection, sessionId, tableName);
+          break;
+        case 'clearMemory':
+          returnData = await chatMemoryOps.clearMemory(connection, sessionId, tableName);
+          break;
+        case 'getSummary':
+          returnData = await chatMemoryOps.getSummary(connection, sessionId, tableName);
+          break;
+        default:
+          throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
       }
     } catch (error) {
       throw new NodeOperationError(this.getNode(), `Chat Memory Error: ${error}`);

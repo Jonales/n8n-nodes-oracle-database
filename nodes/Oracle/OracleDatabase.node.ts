@@ -1,12 +1,3 @@
-/**
- * Oracle Database Node para n8n
- * Suporte para upsert, get, add e update de dados em Oracle database
- *
- * @author Jônatas Meireles Sousa Vieira
- * @version 1.1.0
- */
-
-//import { IExecuteFunctions } from "n8n-core";
 import {
   IDataObject,
   IExecuteFunctions,
@@ -17,6 +8,101 @@ import {
 } from 'n8n-workflow';
 import oracledb from 'oracledb';
 import { OracleConnection } from './core/connection';
+
+class OracleDatabaseOperations {
+  async executeOperation(
+    executeFunctions: IExecuteFunctions,
+    credentials: IDataObject,
+  ): Promise<INodeExecutionData[]> {
+    const oracleCredentials = {
+      user: String(credentials.user),
+      password: String(credentials.password),
+      connectionString: String(credentials.connectionString),
+      thinMode: Boolean(credentials.thinMode),
+    };
+
+    const db = new OracleConnection(oracleCredentials);
+    const connection = await db.getConnection();
+    let returnItems: INodeExecutionData[] = [];
+
+    try {
+      let query = executeFunctions.getNodeParameter('query', 0) as string;
+      const parameterIDataObjectList =
+        ((executeFunctions.getNodeParameter('params', 0, {}) as IDataObject).values as {
+          name: string;
+          value: string | number;
+          datatype: string;
+          parseInStatement: boolean;
+        }[]) || [];
+
+      const bindParameters: { [key: string]: oracledb.BindParameter } =
+        parameterIDataObjectList.reduce(
+          (result: { [key: string]: oracledb.BindParameter }, item) => {
+            let datatype: oracledb.DbType | undefined = undefined;
+            if (item.datatype && item.datatype === 'number') {
+              datatype = oracledb.NUMBER;
+            } else {
+              datatype = oracledb.STRING;
+            }
+
+            if (!item.parseInStatement) {
+              result[item.name] = {
+                type: datatype,
+                val:
+                  item.datatype && item.datatype === 'number'
+                    ? Number(item.value)
+                    : String(item.value),
+              };
+              return result;
+            } else {
+              const valList = item.value.toString().split(',');
+              let generatedSqlString = '(';
+              const crypto = require('crypto');
+
+              for (let i = 0; i < valList.length; i++) {
+                const uniqueId: String = crypto.randomUUID().replaceAll('-', '_');
+                const newParamName = item.name + uniqueId;
+
+                result[newParamName] = {
+                  type: datatype,
+                  val:
+                    item.datatype && item.datatype === 'number'
+                      ? Number(valList[i])
+                      : String(valList[i]),
+                };
+
+                generatedSqlString += `:${newParamName},`;
+              }
+
+              generatedSqlString = generatedSqlString.slice(0, -1) + ')';
+              query = query.replaceAll(':' + item.name, generatedSqlString);
+              return result;
+            }
+          },
+          {},
+        );
+
+      const result = await connection.execute(query, bindParameters, {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+        autoCommit: true,
+      });
+
+      returnItems = executeFunctions.helpers.returnJsonArray(result as unknown as IDataObject[]);
+    } catch (error) {
+      throw new NodeOperationError(executeFunctions.getNode(), (error as Error).message);
+    } finally {
+      if (connection) {
+        try {
+          await connection.close();
+        } catch (error) {
+          console.error(`OracleDB: Failed to close the database connection: ${error}`);
+        }
+      }
+    }
+
+    return returnItems;
+  }
+}
 
 export class OracleDatabase implements INodeType {
   description: INodeTypeDescription = {
@@ -114,106 +200,10 @@ export class OracleDatabase implements INodeType {
 
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const credentials = await this.getCredentials('oracleCredentials');
-    const oracleCredentials = {
-      user: String(credentials.user),
-      password: String(credentials.password),
-      connectionString: String(credentials.connectionString),
-      thinMode: Boolean(credentials.thinMode),
-    };
-
-    const db = new OracleConnection(oracleCredentials);
-
-    const connection = await db.getConnection();
-    let returnItems = [];
-
-    try {
-      //get query
-      let query = this.getNodeParameter('query', 0) as string;
-
-      //get list of param objects entered by user:
-      const parameterIDataObjectList =
-				((this.getNodeParameter('params', 0, {}) as IDataObject).values as {
-					name: string;
-					value: string | number;
-					datatype: string;
-					parseInStatement: boolean;
-				}[]) || [];
-
-      //convert parameterIDataObjectList to map of BindParameters that OracleDB wants
-      const bindParameters: { [key: string]: oracledb.BindParameter } =
-				parameterIDataObjectList.reduce(
-				  (result: { [key: string]: oracledb.BindParameter }, item) => {
-				    //set data type to be correct type
-				    let datatype: oracledb.DbType | undefined = undefined;
-				    if (item.datatype && item.datatype === 'number') {
-				      datatype = oracledb.NUMBER;
-				    } else {
-				      datatype = oracledb.STRING;
-				    }
-
-				    if (!item.parseInStatement) {
-				      //normal process.
-				      result[item.name] = {
-				        type: datatype,
-				        val:
-									item.datatype && item.datatype === 'number'
-									  ? Number(item.value)
-									  : String(item.value),
-				      };
-				      return result;
-				    } else {
-				      //in this else block, we make it possible to use a parameter for an IN statement
-				      const valList = item.value.toString().split(',');
-				      let generatedSqlString = '(';
-				      const crypto = require('crypto');
-
-				      for (let i = 0; i < valList.length; i++) {
-				        //generate unique parameter names for each item in list
-				        const uniqueId: String = crypto.randomUUID().replaceAll('-', '_'); //dashes don't work in parameter names.
-				        const newParamName = item.name + uniqueId;
-
-				        //add new param to param list
-				        result[newParamName] = {
-				          type: datatype,
-				          val:
-										item.datatype && item.datatype === 'number'
-										  ? Number(valList[i])
-										  : String(valList[i]),
-				        };
-
-				        //create sql sting for list with new param names
-				        generatedSqlString += `:${newParamName},`;
-				      }
-
-				      generatedSqlString = generatedSqlString.slice(0, -1) + ')'; //replace trailing comma with closing parenthesis.
-
-				      //replace all occurrences of original parameter name with new generated sql
-				      query = query.replaceAll(':' + item.name, generatedSqlString);
-				      return result;
-				    }
-				  },
-				  {},
-				);
-
-      //execute query
-      const result = await connection.execute(query, bindParameters, {
-        outFormat: oracledb.OUT_FORMAT_OBJECT,
-        autoCommit: true,
-      });
-
-      returnItems = this.helpers.returnJsonArray(result as unknown as IDataObject[]);
-    } catch (error) {
-      throw new NodeOperationError(this.getNode(), (error as Error).message);
-    } finally {
-      if (connection) {
-        try {
-          await connection.close();
-        } catch (error) {
-          console.error(`OracleDB: Failed to close the database connection: ${error}`);
-        }
-      }
-    }
-
-    return this.prepareOutputData(returnItems);
+    const oracleDatabaseOps = new OracleDatabaseOperations();
+    const returnData = await oracleDatabaseOps.executeOperation(this, credentials);
+    return [returnData];
   }
 }
+
+
