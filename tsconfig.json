@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["es2017", "es2019", "es2021"],
+    "lib": ["es2021"],
     "types": ["node"],
     "module": "commonjs",
     "noImplicitAny": true,
