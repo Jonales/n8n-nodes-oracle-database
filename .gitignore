@@ -93,3 +93,7 @@ temp/
 .idea/
 
 .husky
+lib/oracle_client/
+script/test-connection.js
+test-connection.js
+instantclient_21_8/

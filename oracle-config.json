@@ -1,0 +1,7 @@
+{
+  "installedAt": "2025-08-22T23:49:09.897Z",
+  "platform": "linux",
+  "arch": "x64",
+  "libDir": "/home/ubuntu/n8n-nodes-oracle-database/lib/oracle_client/instantclient_21_8",
+  "type": "local"
+}

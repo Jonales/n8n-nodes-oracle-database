@@ -236,21 +236,26 @@ class OracleSetup {
 			if (config.mode === 'thick' && config.libDir) {
 				// Ajuste LD_LIBRARY_PATH ou PATH conforme plataforma
 				const platform = process.platform;
-				if (platform === 'linux' || platform === 'darwin') {
-					// Define variável temporária para o processo atual
-					process.env.LD_LIBRARY_PATH =
-						config.libDir + (process.env.LD_LIBRARY_PATH ? `:${process.env.LD_LIBRARY_PATH}` : '');
-					console.log(`   🔧 LD_LIBRARY_PATH ajustado para: ${process.env.LD_LIBRARY_PATH}`);
-					console.log(
-						'   💡 Para uso permanente, adicione ao ~/.bashrc, ~/.zshrc ou seu profile:\n' +
-							`       export LD_LIBRARY_PATH="${config.libDir}:$LD_LIBRARY_PATH"`,
-					);
-				} else if (platform === 'win32') {
-					console.log(
-						'   ℹ️ No Windows, certifique-se que a pasta do cliente Oracle esteja no PATH:',
-					);
-					console.log(`       set PATH=${config.libDir};%PATH%`);
-				}
+            if (platform === 'linux' || platform === 'darwin') {
+                // Define variável temporária para o processo atual
+                process.env.LD_LIBRARY_PATH =
+                    config.libDir + (process.env.LD_LIBRARY_PATH ? `:${process.env.LD_LIBRARY_PATH}` : '');
+                console.log(`   🔧 LD_LIBRARY_PATH ajustado para: ${process.env.LD_LIBRARY_PATH}`);
+                // Adiciona ao .bashrc para persistência
+                const bashrcPath = path.join(process.env.HOME, '.bashrc');
+                const exportCommand = `export LD_LIBRARY_PATH="${config.libDir}:$LD_LIBRARY_PATH"`;
+                if (!fs.existsSync(bashrcPath) || !fs.readFileSync(bashrcPath, 'utf8').includes(exportCommand)) {
+                    fs.appendFileSync(bashrcPath, `\n${exportCommand}\n`);
+                    console.log(`   ✅ Adicionado ao ${bashrcPath} para persistência.`);
+                } else {
+                    console.log(`   ℹ️ ${bashrcPath} já contém a configuração.`);
+                }
+            } else if (platform === 'win32') {
+                console.log(
+                    '   ℹ️ No Windows, certifique-se que a pasta do cliente Oracle esteja no PATH:',
+                );
+                console.log(`       set PATH=${config.libDir};%PATH%`);
+            }
 
 				try {
 					oracledb.initOracleClient({ libDir: config.libDir });
