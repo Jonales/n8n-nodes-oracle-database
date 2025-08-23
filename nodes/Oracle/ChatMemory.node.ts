@@ -358,28 +358,28 @@ export class OracleChatMemory implements INodeType {
       connection = await pool.getConnection();
 
       switch (operation) {
-        case 'setup':
-          returnData = await chatMemoryOps.setupTable(connection, tableName);
-          break;
-        case 'addMessage':
-          returnData = await chatMemoryOps.addMessage(
-            connection,
-            sessionId,
-            tableName,
-            memoryType,
-          );
-          break;
-        case 'getMessages':
-          returnData = await chatMemoryOps.getMessages(connection, sessionId, tableName);
-          break;
-        case 'clearMemory':
-          returnData = await chatMemoryOps.clearMemory(connection, sessionId, tableName);
-          break;
-        case 'getSummary':
-          returnData = await chatMemoryOps.getSummary(connection, sessionId, tableName);
-          break;
-        default:
-          throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
+      case 'setup':
+        returnData = await chatMemoryOps.setupTable(connection, tableName);
+        break;
+      case 'addMessage':
+        returnData = await chatMemoryOps.addMessage(
+          connection,
+          sessionId,
+          tableName,
+          memoryType,
+        );
+        break;
+      case 'getMessages':
+        returnData = await chatMemoryOps.getMessages(connection, sessionId, tableName);
+        break;
+      case 'clearMemory':
+        returnData = await chatMemoryOps.clearMemory(connection, sessionId, tableName);
+        break;
+      case 'getSummary':
+        returnData = await chatMemoryOps.getSummary(connection, sessionId, tableName);
+        break;
+      default:
+        throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
       }
     } catch (error) {
       throw new NodeOperationError(this.getNode(), `Chat Memory Error: ${error}`);

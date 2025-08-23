@@ -37,14 +37,14 @@ class OracleDatabaseAdvancedOperations {
   // Função auxiliar para configuração de pool
   public getPoolConfig = (poolType: string) => {
     switch (poolType) {
-      case 'highvolume':
-        return OracleConnectionPool.getHighVolumeConfig();
-      case 'oltp':
-        return OracleConnectionPool.getOLTPConfig();
-      case 'analytics':
-        return OracleConnectionPool.getAnalyticsConfig();
-      default:
-        return {};
+    case 'highvolume':
+      return OracleConnectionPool.getHighVolumeConfig();
+    case 'oltp':
+      return OracleConnectionPool.getOLTPConfig();
+    case 'analytics':
+      return OracleConnectionPool.getAnalyticsConfig();
+    default:
+      return {};
     }
   };
 
@@ -60,24 +60,24 @@ class OracleDatabaseAdvancedOperations {
       let value: any = param.value;
 
       switch (param.datatype) {
-        case 'number':
-          value = Number(param.value);
-          break;
-        case 'date':
-          value = new Date(param.value);
-          break;
-        case 'out':
-          value = {
-            dir: oracledb.BIND_OUT,
-            type: oracledb.STRING,
-            maxSize: 4000,
-          };
-          break;
-        case 'clob':
-          value = { type: oracledb.CLOB, val: param.value };
-          break;
-        default:
-          value = String(param.value);
+      case 'number':
+        value = Number(param.value);
+        break;
+      case 'date':
+        value = new Date(param.value);
+        break;
+      case 'out':
+        value = {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.STRING,
+          maxSize: 4000,
+        };
+        break;
+      case 'clob':
+        value = { type: oracledb.CLOB, val: param.value };
+        break;
+      default:
+        value = String(param.value);
       }
 
       bindParameters[param.name] = value;
@@ -316,23 +316,23 @@ export class OracleDatabaseAdvanced implements INodeType {
 
       // Executar operação baseada no tipo
       switch (operationType) {
-        case 'query':
-          returnItems = await oracleAdvancedOps.executeQuery(connection);
-          break;
-        case 'plsql':
-          returnItems = await oracleAdvancedOps.executePLSQL(connection);
-          break;
-        case 'bulk':
-          returnItems = await oracleAdvancedOps.executeBulkOperations(connection);
-          break;
-        case 'transaction':
-          returnItems = await oracleAdvancedOps.executeTransaction(connection);
-          break;
-        case 'queue':
-          returnItems = await oracleAdvancedOps.executeAQOperations(connection);
-          break;
-        default:
-          throw new Error(`Tipo de operação não suportado: ${operationType}`);
+      case 'query':
+        returnItems = await oracleAdvancedOps.executeQuery(connection);
+        break;
+      case 'plsql':
+        returnItems = await oracleAdvancedOps.executePLSQL(connection);
+        break;
+      case 'bulk':
+        returnItems = await oracleAdvancedOps.executeBulkOperations(connection);
+        break;
+      case 'transaction':
+        returnItems = await oracleAdvancedOps.executeTransaction(connection);
+        break;
+      case 'queue':
+        returnItems = await oracleAdvancedOps.executeAQOperations(connection);
+        break;
+      default:
+        throw new Error(`Tipo de operação não suportado: ${operationType}`);
       }
 
       // Log de estatísticas de conexão

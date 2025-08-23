@@ -315,7 +315,7 @@ class OracleVectorStoreOperations {
         throw new Error('Pelo menos um campo (content, embedding, metadata) deve ser fornecido para atualização');
       }
 
-      let updateFields: string[] = [];
+      const updateFields: string[] = [];
       const bindParams: { [key: string]: any } = { documentId };
 
       if (content !== undefined) {
@@ -619,29 +619,29 @@ export class OracleVectorStore implements INodeType {
       connection = await pool.getConnection();
 
       switch (operation) {
-        case 'setup':
-          returnData = await oracleVectorStoreOps.setupCollection(connection);
-          break;
-        case 'addDocument':
-          returnData = await oracleVectorStoreOps.addDocument(connection);
-          break;
-        case 'searchSimilarity':
-          returnData = await oracleVectorStoreOps.searchSimilarity(connection);
-          break;
-        case 'deleteDocument':
-          returnData = await oracleVectorStoreOps.deleteDocument(connection);
-          break;
-        case 'updateDocument':
-          returnData = await oracleVectorStoreOps.updateDocument(connection);
-          break;
-        case 'getDocument':
-          returnData = await oracleVectorStoreOps.getDocument(connection);
-          break;
-        case 'listCollections':
-          returnData = await oracleVectorStoreOps.listCollections(connection);
-          break;
-        default:
-          throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
+      case 'setup':
+        returnData = await oracleVectorStoreOps.setupCollection(connection);
+        break;
+      case 'addDocument':
+        returnData = await oracleVectorStoreOps.addDocument(connection);
+        break;
+      case 'searchSimilarity':
+        returnData = await oracleVectorStoreOps.searchSimilarity(connection);
+        break;
+      case 'deleteDocument':
+        returnData = await oracleVectorStoreOps.deleteDocument(connection);
+        break;
+      case 'updateDocument':
+        returnData = await oracleVectorStoreOps.updateDocument(connection);
+        break;
+      case 'getDocument':
+        returnData = await oracleVectorStoreOps.getDocument(connection);
+        break;
+      case 'listCollections':
+        returnData = await oracleVectorStoreOps.listCollections(connection);
+        break;
+      default:
+        throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
