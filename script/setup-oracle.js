@@ -124,35 +124,10 @@ class OracleSetup {
 	}
 
 	/**
-	 * Instala dependências npm se necessário
+	 * REMOVIDO: installNpmDependencies() 
+	 * Motivo: Não deve instalar dependências dentro do pacote npm instalado
+	 * O pacote já vem com os arquivos dist/ compilados
 	 */
-	installNpmDependencies() {
-		console.log('📦 Verificando dependências npm...');
-
-		const packageJsonPath = path.join(this.projectRoot, 'package.json');
-
-		if (fs.existsSync(packageJsonPath)) {
-			const nodeModulesPath = path.join(this.projectRoot, 'node_modules');
-
-			if (!fs.existsSync(nodeModulesPath)) {
-				console.log('   Executando npm install...');
-				try {
-					execSync('npm install', {
-						cwd: this.projectRoot,
-						stdio: 'inherit',
-					});
-					console.log('   ✅ Dependências instaladas');
-				} catch (error) {
-					console.error('   ❌ Erro ao instalar dependências:', error.message);
-					throw error;
-				}
-			} else {
-				console.log('   ✅ node_modules já existe');
-			}
-		} else {
-			console.log('   ⚠️ package.json não encontrado, pulando...');
-		}
-	}
 
 	/**
 	 * Configura Oracle Client
@@ -227,33 +202,33 @@ class OracleSetup {
 			if (config.mode === 'thick' && config.libDir) {
 				// Ajuste LD_LIBRARY_PATH ou PATH conforme plataforma
 				const platform = process.platform;
-            if (platform === 'linux' || platform === 'darwin') {
-                // Define variável temporária para o processo atual
-                process.env.LD_LIBRARY_PATH =
-                    config.libDir + (process.env.LD_LIBRARY_PATH ? `:${process.env.LD_LIBRARY_PATH}` : '');
-                console.log(`   🔧 LD_LIBRARY_PATH ajustado para: ${process.env.LD_LIBRARY_PATH}`);
-                // Adiciona ao .bashrc para persistência
-                const bashrcPath = path.join(process.env.HOME, '.bashrc');
-                const exportCommand = `export LD_LIBRARY_PATH="${config.libDir}:$LD_LIBRARY_PATH"`;
-                if (!fs.existsSync(bashrcPath) || !fs.readFileSync(bashrcPath, 'utf8').includes(exportCommand)) {
-                    fs.appendFileSync(bashrcPath, `\n${exportCommand}\n`);
-                    console.log(`   ✅ Adicionado ao ${bashrcPath} para persistência.`);
-                } else {
-                    console.log(`   ℹ️ ${bashrcPath} já contém a configuração.`);
-                }
-                // Tenta carregar a nova configuração do bashrc imediatamente
-                try {
-                    execSync(`source ${bashrcPath}`, { stdio: 'inherit' });
-                    console.log('   ✅ .bashrc recarregado.');
-                } catch (sourceError) {
-                    console.warn('   ⚠️ Não foi possível recarregar .bashrc. Pode ser necessário reiniciar o terminal.');
-                }
-            } else if (platform === 'win32') {
-                console.log(
-                    '   ℹ️ No Windows, certifique-se que a pasta do cliente Oracle esteja no PATH:',
-                );
-                console.log(`       set PATH=${config.libDir};%PATH%`);
-            }
+				if (platform === 'linux' || platform === 'darwin') {
+					// Define variável temporária para o processo atual
+					process.env.LD_LIBRARY_PATH =
+						config.libDir + (process.env.LD_LIBRARY_PATH ? `:${process.env.LD_LIBRARY_PATH}` : '');
+					console.log(`   🔧 LD_LIBRARY_PATH ajustado para: ${process.env.LD_LIBRARY_PATH}`);
+					// Adiciona ao .bashrc para persistência
+					const bashrcPath = path.join(process.env.HOME, '.bashrc');
+					const exportCommand = `export LD_LIBRARY_PATH="${config.libDir}:$LD_LIBRARY_PATH"`;
+					if (!fs.existsSync(bashrcPath) || !fs.readFileSync(bashrcPath, 'utf8').includes(exportCommand)) {
+						fs.appendFileSync(bashrcPath, `\n${exportCommand}\n`);
+						console.log(`   ✅ Adicionado ao ${bashrcPath} para persistência.`);
+					} else {
+						console.log(`   ℹ️ ${bashrcPath} já contém a configuração.`);
+					}
+					// Tenta carregar a nova configuração do bashrc imediatamente
+					try {
+						execSync(`source ${bashrcPath}`, { stdio: 'inherit' });
+						console.log('   ✅ .bashrc recarregado.');
+					} catch (sourceError) {
+						console.warn('   ⚠️ Não foi possível recarregar .bashrc. Pode ser necessário reiniciar o terminal.');
+					}
+				} else if (platform === 'win32') {
+					console.log(
+						'   ℹ️ No Windows, certifique-se que a pasta do cliente Oracle esteja no PATH:',
+					);
+					console.log(`       set PATH=${config.libDir};%PATH%`);
+				}
 
 				try {
 					oracledb.initOracleClient({ libDir: config.libDir });
@@ -379,11 +354,8 @@ module.exports = testOracleConnection;
 				console.log('');
 			}
 
-			// 3. Instalar dependências npm
-			if (!skipDependencies) {
-				this.installNpmDependencies();
-				console.log('');
-			}
+			// 3. REMOVIDO: installNpmDependencies()
+			// Motivo: Pacote npm já vem com arquivos compilados
 
 			// 4. Configurar Oracle Client
 			if (!skipOracle) {
