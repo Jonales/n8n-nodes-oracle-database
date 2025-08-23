@@ -1,0 +1,127 @@
+{
+	"name": "@jonales/n8n-nodes-oracle-database",
+	"type": "commonjs",
+	"version": "1.0.1-rc.9",
+	"description": "Oracle Database node com recursos avançados para cargas pesadas e Oracle 19c+. Suporte completo para PL/SQL, bulk operations, connection pooling e Oracle Cloud Infrastructure com instalação automática do cliente Oracle.",
+	"keywords": [
+		"n8n-community-node-package",
+		"oracle"
+	],
+	"license": "MIT",
+	"homepage": "https://github.com/jonales/n8n-nodes-oracle-database",
+	"author": {
+		"name": "Jônatas Meireles Sousa Vieira",
+		"email": "jonatas.mei@outlook.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/jonales/n8n-nodes-oracle-database.git"
+	},
+	"main": "index.js",
+	"engines": {
+		"node": ">=18.18.0",
+		"npm": ">=9.0.0"
+	},
+	"os": [
+		"darwin",
+		"linux",
+		"win32"
+	],
+	"cpu": [
+		"x64",
+		"arm64"
+	],
+	"packageManager": "npm@10.9.2",
+	"scripts": {
+		"preinstall": "npx only-allow npm",
+		"clean": "npx rimraf dist tsconfig.tsbuildinfo",
+		"prebuild": "npm run clean",
+		"build": "tsc -p tsconfig.json && gulp build:icons",
+		"build:watch": "tsc -p tsconfig.json --watch",
+		"build:assets": "npx gulp build:assets",
+		"dev": "npm run build:watch",
+		"format": "prettier . --write --ignore-path .gitignore",
+		"format:check": "prettier . --check --ignore-path .gitignore",
+		"lint": "eslint . --ext .ts,.js --cache",
+		"lint:fix": "eslint . --ext .ts,.js --cache --fix",
+		"type-check": "tsc --noEmit -p tsconfig.json",
+		"prepublishOnly": "npm run clean && npm run build && npm run lint ",
+		"prepare": "husky",
+		"validate": "npm run type-check && npm run lint ",
+		"dev:assets": "npx gulp watch",
+		"clean:dist": "npx gulp cleanup:dist",
+		"setup": "node script/setup-oracle.js",
+		"setup:force": "node script/setup-oracle.js --force",
+		"setup:skip-deps": "node script/setup-oracle.js --skip-deps",
+		"install-oracle": "node script/oracle-installer.js",
+		"install-oracle:force": "node script/oracle-installer.js --force",
+		"test-connection": "node script/test-connection.js",
+		"detect-oracle": "node -e \"const {getOracleClientConfig} = require('./script/oracle-detector'); getOracleClientConfig().then(console.log).catch(console.error);\"",
+		"clean:oracle": "node -e \"const {OracleClientDetector} = require('./script/oracle-detector'); new OracleClientDetector().cleanup();\"",
+		"postinstall": "npm run setup",
+		"validate:oracle": "node script/setup-oracle.js --skip-deps --skip-oracle",
+		"help": "node script/setup-oracle.js --help",
+		"oracle:status": "node script/oracle-status.js",
+		"oracle:repair": "node script/oracle-repair.js"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"files": [
+		"dist/**/*",
+		"script/**/*",
+		"README.md",
+		"LICENSE"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"credentials": [
+			"dist/credentials/Oracle.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Oracle/OracleDatabase.node.js",
+			"dist/nodes/Oracle/OracleDatabaseAdvanced.node.js",
+			"dist/nodes/Oracle/OracleVectorStore.node.js",
+			"dist/nodes/Oracle/ChatMemory.node.js"
+		]
+	},
+	"devDependencies": {
+		"@eslint/config-array": "^0.18.0",
+		"@eslint/js": "^9.33.0",
+		"@eslint/object-schema": "^2.1.6",
+		"@sentry/node": "^10.5.0",
+		"@stylistic/eslint-plugin-js": "^4.4.1",
+		"@types/express": "^5.0.3",
+		"@types/nock": "^10.0.3",
+		"@types/node": "^22.10.5",
+		"@types/oracledb": "^6.9.1",
+		"@types/request-promise-native": "~1.0.21",
+		"@types/ssh2": "^1.15.5",
+		"@typescript-eslint/eslint-plugin": "^8.39.1",
+		"@typescript-eslint/parser": "^8.40.0",
+		"eslint": "^9.33.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-import": "^2.31.0",
+		"eslint-plugin-n8n-nodes-base": "^1.16.3",
+		"eslint-plugin-prettier": "^5.2.1",
+		"globals": "^16.3.0",
+		"gulp": "^5.0.1",
+		"husky": "^9.1.7",
+		"jest": "^30.0.5",
+		"merge-stream": "^2.0.0",
+		"n8n-core": "^1.106.2",
+		"n8n-workflow": "^1.105.0",
+		"prettier": "^3.6.2",
+		"prettier-plugin-organize-imports": "^4.2.0",
+		"rimraf": "^6.0.1",
+		"ts-jest": "^29.4.1",
+		"typescript": "~5.9.2"
+	},
+	"dependencies": {
+		"oracledb": "^6.9.0"
+	},
+	"peerDependencies": {
+		"n8n-workflow": ">=1.0.0"
+	}
+}
