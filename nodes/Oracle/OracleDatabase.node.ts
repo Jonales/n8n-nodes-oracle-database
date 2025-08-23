@@ -9,7 +9,7 @@ import {
 import oracledb from 'oracledb';
 import { OracleConnection } from './core/connection';
 
-class OracleDatabaseOperations {
+export class OracleDatabaseOperations {
   async executeOperation(
     executeFunctions: IExecuteFunctions,
     credentials: IDataObject,

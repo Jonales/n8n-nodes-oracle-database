@@ -1,11 +1,3 @@
-/**
- * Tipos de credenciais Oracle para n8n-nodes-oracle-database
- * Suporte para modo thin (padrão) e thick com Oracle Client
- *
- * @author Jônatas Meireles Sousa Vieira
- * @version 1.0.0
- */
-
 import { ICredentialType, INodeProperties } from 'n8n-workflow';
 
 export type IOracleCredentials = {

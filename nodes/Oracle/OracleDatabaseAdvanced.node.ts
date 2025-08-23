@@ -27,7 +27,7 @@ interface NodeParameterItem {
   datatype: string;
 }
 
-class OracleDatabaseAdvancedOperations {
+export class OracleDatabaseAdvancedOperations {
   private executeFunctions: IExecuteFunctions;
 
   constructor(executeFunctions: IExecuteFunctions) {

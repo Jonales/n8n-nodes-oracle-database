@@ -1,11 +1,3 @@
-/**
- * Tipos de credenciais Oracle para n8n-nodes
- * Suporte para modo thin (padrão) e thick com Oracle Client
- *
- * @author Jônatas Meireles Sousa Vieira
- * @version 1.0.0
- */
-
 import oracledb, { Connection, ConnectionAttributes, InitialiseOptions } from 'oracledb';
 import { DatabaseConnection } from './interfaces/database.interface';
 import { OracleCredentials } from './types/oracle.credentials.type';

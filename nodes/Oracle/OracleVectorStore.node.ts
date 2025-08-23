@@ -9,7 +9,7 @@ import {
 import oracledb, { Connection } from 'oracledb';
 import { OracleConnectionPool } from './core/connectionPool';
 
-class OracleVectorStoreOperations {
+export class OracleVectorStoreOperations {
   private executeFunctions: IExecuteFunctions;
 
   constructor(executeFunctions: IExecuteFunctions) {
@@ -500,22 +500,15 @@ export class OracleVectorStore implements INodeType {
         displayName: 'Collection Name',
         name: 'collectionName',
         type: 'string',
-        default: 'vector_documents',
-        required: true,
-        description: 'Nome da tabela para armazenar os documentos vetoriais',
-        displayOptions: {
-          hide: {
-            operation: ['listCollections'],
-          },
-        },
+        default: 'VECTOR_STORE',
+        description: 'Nome da coleção (tabela) no banco de dados Oracle',
       },
       {
         displayName: 'Vector Dimension',
         name: 'vectorDimension',
         type: 'number',
         default: 1536,
-        required: true,
-        description: 'Dimensão dos vetores (ex: 1536 para OpenAI embeddings, 1024 para Google)',
+        description: 'Dimensão do vetor (número de elementos no embedding)',
         displayOptions: {
           show: {
             operation: ['setup'],
@@ -527,8 +520,7 @@ export class OracleVectorStore implements INodeType {
         name: 'documentId',
         type: 'string',
         default: '',
-        required: true,
-        description: 'ID único do documento',
+        description: 'ID do documento a ser operado',
         displayOptions: {
           show: {
             operation: ['deleteDocument', 'updateDocument', 'getDocument'],
@@ -536,12 +528,11 @@ export class OracleVectorStore implements INodeType {
         },
       },
       {
-        displayName: 'Search Vector',
+        displayName: 'Search Vector (JSON Array)',
         name: 'searchVector',
         type: 'string',
-        default: '',
-        required: true,
-        description: 'Vetor de busca como string JSON array (ex: [0.1, 0.2, 0.3])',
+        default: '[0.1, 0.2, 0.3]',
+        description: 'Vetor de busca no formato JSON array (ex: [0.1, 0.2, 0.3])',
         displayOptions: {
           show: {
             operation: ['searchSimilarity'],
@@ -549,7 +540,7 @@ export class OracleVectorStore implements INodeType {
         },
       },
       {
-        displayName: 'Limit Results',
+        displayName: 'Limit',
         name: 'limit',
         type: 'number',
         default: 10,
@@ -561,11 +552,11 @@ export class OracleVectorStore implements INodeType {
         },
       },
       {
-        displayName: 'Similarity Threshold',
+        displayName: 'Threshold',
         name: 'threshold',
         type: 'number',
         default: 0.7,
-        description: 'Limite mínimo de similaridade (0-1)',
+        description: 'Limiar de similaridade (0.0 a 1.0)',
         displayOptions: {
           show: {
             operation: ['searchSimilarity'],
@@ -596,23 +587,16 @@ export class OracleVectorStore implements INodeType {
     const credentials = await this.getCredentials('oracleCredentials');
     const operation = this.getNodeParameter('operation', 0) as string;
 
-    if (!credentials.user || !credentials.password || !credentials.connectionString) {
-      throw new NodeOperationError(
-        this.getNode(),
-        'Credenciais Oracle incompletas. Verifique user, password e connectionString.',
-      );
-    }
-
     const oracleCredentials = {
       user: String(credentials.user),
       password: String(credentials.password),
       connectionString: String(credentials.connectionString),
+      thinMode: Boolean(credentials.thinMode),
     };
 
     let connection: Connection | undefined;
     let returnData: INodeExecutionData[] = [];
-
-    const oracleVectorStoreOps = new OracleVectorStoreOperations(this);
+    const vectorStoreOps = new OracleVectorStoreOperations(this);
 
     try {
       const pool = await OracleConnectionPool.getPool(oracleCredentials);
@@ -620,39 +604,34 @@ export class OracleVectorStore implements INodeType {
 
       switch (operation) {
       case 'setup':
-        returnData = await oracleVectorStoreOps.setupCollection(connection);
+        returnData = await vectorStoreOps.setupCollection(connection);
         break;
       case 'addDocument':
-        returnData = await oracleVectorStoreOps.addDocument(connection);
+        returnData = await vectorStoreOps.addDocument(connection);
         break;
       case 'searchSimilarity':
-        returnData = await oracleVectorStoreOps.searchSimilarity(connection);
+        returnData = await vectorStoreOps.searchSimilarity(connection);
         break;
       case 'deleteDocument':
-        returnData = await oracleVectorStoreOps.deleteDocument(connection);
+        returnData = await vectorStoreOps.deleteDocument(connection);
         break;
       case 'updateDocument':
-        returnData = await oracleVectorStoreOps.updateDocument(connection);
+        returnData = await vectorStoreOps.updateDocument(connection);
         break;
       case 'getDocument':
-        returnData = await oracleVectorStoreOps.getDocument(connection);
+        returnData = await vectorStoreOps.getDocument(connection);
         break;
       case 'listCollections':
-        returnData = await oracleVectorStoreOps.listCollections(connection);
+        returnData = await vectorStoreOps.listCollections(connection);
         break;
       default:
         throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new NodeOperationError(this.getNode(), `Oracle Vector Store Error: ${errorMessage}`);
+      throw new NodeOperationError(this.getNode(), `Oracle Vector Store Error: ${error}`);
     } finally {
       if (connection) {
-        try {
-          await connection.close();
-        } catch (error) {
-          console.warn('Erro ao fechar conexão:', error);
-        }
+        await connection.close();
       }
     }
 

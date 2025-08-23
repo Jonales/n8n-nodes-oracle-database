@@ -1,10 +1,4 @@
 #!/usr/bin/env node
-
-/**
- * Exemplo de teste de conexão Oracle
- * Demonstra uso do Oracle Client auto-configurado
- */
-
 const { getOracleClientConfig } = require('./oracle-detector');
 
 async function testOracleConnection() {

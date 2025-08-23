@@ -1,9 +1,4 @@
 #!/usr/bin/env node
-/**
- * Oracle Status Checker
- * Verifica status da configuração Oracle
- */
-
 const { getOracleClientConfig } = require('./oracle-detector');
 
 async function checkOracleStatus() {

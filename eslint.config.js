@@ -1,5 +1,3 @@
-// eslint.config.js
-
 const globals = require('globals');
 
 module.exports = [

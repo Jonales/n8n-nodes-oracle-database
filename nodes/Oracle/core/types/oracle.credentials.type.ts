@@ -1,15 +1,3 @@
-/**
- * Tipos de credenciais Oracle para n8n-nodes-oracle-database
- * Suporte para modo thin (padrão) e thick com Oracle Client
- *
- * @author Jônatas Meireles Sousa Vieira
- * @version 1.0.0
- */
-
-/**
- * Interface principal para credenciais Oracle
- * Inclui suporte tanto para modo thin quanto thick
- */
 export interface OracleCredentials {
 	/** Nome do usuário do banco de dados */
 	user: string;

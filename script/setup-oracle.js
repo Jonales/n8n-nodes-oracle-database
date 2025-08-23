@@ -1,13 +1,4 @@
 #!/usr/bin/env node
-
-/**
- * Setup Script - Oracle Client Auto-Setup
- * Script de configuração automática para n8n-nodes-oracle-database
- *
- * @author Jônatas Meireles Sousa Vieira
- * @version 1.0.0
- */
-
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
@@ -249,6 +240,13 @@ class OracleSetup {
                     console.log(`   ✅ Adicionado ao ${bashrcPath} para persistência.`);
                 } else {
                     console.log(`   ℹ️ ${bashrcPath} já contém a configuração.`);
+                }
+                // Tenta carregar a nova configuração do bashrc imediatamente
+                try {
+                    execSync(`source ${bashrcPath}`, { stdio: 'inherit' });
+                    console.log('   ✅ .bashrc recarregado.');
+                } catch (sourceError) {
+                    console.warn('   ⚠️ Não foi possível recarregar .bashrc. Pode ser necessário reiniciar o terminal.');
                 }
             } else if (platform === 'win32') {
                 console.log(

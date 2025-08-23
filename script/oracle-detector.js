@@ -1,11 +1,3 @@
-/**
- * Oracle Client Detection Utility
- * Utilitário para detectar e configurar Oracle Client automaticamente
- *
- * @author Jônatas Meireles Sousa Vieira
- * @version 1.0.0
- */
-
 const fs = require('fs');
 const path = require('path');
 

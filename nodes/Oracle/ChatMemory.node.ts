@@ -9,7 +9,7 @@ import {
 import oracledb, { Connection } from 'oracledb';
 import { OracleConnectionPool } from './core/connectionPool';
 
-class OracleChatMemoryOperations {
+export class OracleChatMemoryOperations {
   private executeFunctions: IExecuteFunctions;
 
   constructor(executeFunctions: IExecuteFunctions) {

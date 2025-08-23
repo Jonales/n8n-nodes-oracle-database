@@ -1,13 +1,4 @@
 #!/usr/bin/env node
-
-/**
- * Oracle Instant Client Auto-Installer
- * Automatiza download e configuração do Oracle Client para n8n-nodes-oracle-database
- *
- * @author Jônatas Meireles Sousa Vieira
- * @version 1.0.0
- */
-
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
