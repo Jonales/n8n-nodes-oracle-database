@@ -94,6 +94,8 @@ temp/
 
 .husky
 lib/oracle_client/
+lib/oracle_cliente/
 script/test-connection.js
 test-connection.js
 instantclient_21_8/
+home/
