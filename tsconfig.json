@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["es2021"],
+    "lib": ["es2017", "es2019", "es2021", "dom"],
     "types": ["node"],
     "module": "commonjs",
     "noImplicitAny": true,
@@ -9,10 +9,10 @@
     "strict": true,
     "preserveConstEnums": true,
     "resolveJsonModule": true,
-    "declaration": false,
+    "declaration": true,
     "outDir": "./dist/",
     "target": "es2021",
-    "sourceMap": false,
+    "sourceMap": true,
     "esModuleInterop": true,
     "useUnknownInCatchVariables": false,
     "skipLibCheck": true,
@@ -20,20 +20,14 @@
   },
   "include": [
     "credentials/**/*", 
-    "nodes/**/*"
+    "nodes/**/*", 
+    "package.json"
   ],
   "exclude": [
-    "node_modules/**/*", 
-    "dist/**/*", 
+    "node_modules", 
+    "dist", 
     "**/*.test.ts", 
     "**/*.spec.ts",
-    "script/**/*",
-    "gulpfile.js",
-    "gulpfile.ts",
-    "*.config.js",
-    "*.config.ts",
-    ".eslintrc.js",
-    "jest.config.js",
-    "prettier.config.js"
+    "script/**/*"
   ]
 }
